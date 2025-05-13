@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Floating Chat Widget Demo</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', 'Noto Sans TC', Arial, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    h1 {
+      margin-top: 48px;
+      color: #4F8CFF;
+    }
+    .desc {
+      color: #333;
+      margin-bottom: 32px;
+    }
+  </style>
+</head>
+<body>
+  <h1>浮動聊天小部件 Demo</h1>
+  <div class="desc">這是一個可嵌入任何網站的 AI 聊天小部件範例。<br>點擊右下角氣泡開始對話！</div>
+
+  <!-- 引入浮動聊天小部件 -->
+  <script src="floating-chat-widget.js"></script>
+  <script>
+    // 初始化小部件
+    FloatingChatWidget.init({
+      themeColor: '#4F8CFF',
+      placeholder: '請輸入訊息...',
+      debug: true,
+      position: 'bottom-right',
+      fontFamily: 'Segoe UI, Noto Sans TC, Arial, sans-serif',
+    });
+
+    // 可選：自訂用戶請求處理（預設會自動呼叫 n8n API）
+    // FloatingChatWidget.onUserRequest(function (text) {
+    //   setTimeout(function () {
+    //     FloatingChatWidget.reply('這是自訂回覆：' + text);
+    //   }, 800);
+    // });
+  </script>
+</body>
+</html> 
