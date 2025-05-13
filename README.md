@@ -5,6 +5,10 @@
 **Floating Chat Widget** is a pure JavaScript, dependency-free, highly customizable floating AI chat widget. Easily embeddable on any website, it connects to an n8n AI agent API. Features a cute pink theme, smooth animations, emoji/SVG bubble icon, and customizable reply logic.
 
 **浮動聊天小部件**是一個純 JavaScript、無依賴、可高度自訂的 AI 聊天元件。可輕鬆嵌入任何網站，支援連接 n8n AI agent API，粉嫩主題、流暢動畫、可愛 icon，並可自訂回覆行為。
+![image](https://github.com/user-attachments/assets/d2695e54-b47a-4fcc-b2a5-756e1c120fc1)
+![image](https://github.com/user-attachments/assets/870a0013-3ad1-4760-9a64-26800b2e5003)
+![image](https://github.com/user-attachments/assets/58b3938d-0b25-44ad-82a4-894bcf03c1a5)
+
 
 ---
 
