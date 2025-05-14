@@ -2,7 +2,7 @@
  * FloatingChatWidget - A lightweight, customizable, dependency-free floating chat widget.
  *
  * Features:
- * - Responsive design
+ * - Responsive design 
  * - Smooth animations
  * - Easily customizable
  * - No external dependencies
