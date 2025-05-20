@@ -9,7 +9,7 @@
 ![image](https://github.com/user-attachments/assets/870a0013-3ad1-4760-9a64-26800b2e5003)
 ![image](https://github.com/user-attachments/assets/58b3938d-0b25-44ad-82a4-894bcf03c1a5)
 
-
+DEMO : https://n8n-ai-chat-widget.pages.dev/demo-floating-chat-widget
 ---
 
 ## 🚀 Quick Start | 快速開始
