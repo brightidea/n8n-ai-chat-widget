@@ -1,23 +1,20 @@
 # n8n AI Chat Widget
 
-A lightweight, customizable React chat widget component for n8n AI agents. Features a beautiful pink theme, smooth animations, markdown support, and seamless n8n integration.
-
-![Demo Screenshots](https://github.com/user-attachments/assets/d2695e54-b47a-4fcc-b2a5-756e1c120fc1)
-
-**[Live Demo](https://n8n-ai-chat-widget.hkdesv.com/demo-floating-chat-widget)**
+A lightweight, customizable React chat widget component for n8n AI agents. Features a clean modern design, smooth animations, markdown support, and seamless n8n integration with support for real-time streaming responses.
 
 ---
 
 ## ✨ Features
 
 - 💬 **Lightweight React Component** - Built with TypeScript, fully typed
-- 🎨 **Customizable Theme** - Easy color, font, and icon customization
-- 🐱 **Flexible Icons** - Use emoji, SVG, or custom React components
+- 🎨 **Modern Clean Design** - Beautiful orange/coral theme with white background
+- 🖼️ **Flexible Icons** - Use emoji, image URLs, or custom React components
 - 📱 **Responsive Design** - Works beautifully on all screen sizes
-- ✨ **Smooth Animations** - Polished UI with loading indicators
+- ✨ **Smooth Animations** - Polished UI with loading indicators and streaming cursor
 - 🔗 **n8n Integration** - Direct connection to n8n AI agent APIs
 - 📝 **Markdown Support** - Rich text formatting in bot replies
 - 🌊 **SSE Streaming** - Real-time streaming responses for faster UX
+- 🎭 **Theme Options** - Clean theme mode or customizable colored theme
 - 🛠️ **Highly Customizable** - Override any behavior with callbacks
 - 🎯 **Zero Dependencies** - Only requires React as a peer dependency
 
@@ -36,6 +33,7 @@ yarn add n8n-ai-chat-widget
 ```
 
 **Requirements:**
+
 - React 16.8+
 
 ---
@@ -45,8 +43,8 @@ yarn add n8n-ai-chat-widget
 ### Basic Usage
 
 ```tsx
-import { FloatingChatWidget } from 'n8n-ai-chat-widget';
-import 'n8n-ai-chat-widget/dist/index.css';
+import { FloatingChatWidget } from "n8n-ai-chat-widget";
+import "n8n-ai-chat-widget/dist/index.css";
 
 function App() {
   return (
@@ -65,8 +63,8 @@ function App() {
 ### With Custom Styling
 
 ```tsx
-import { FloatingChatWidget } from 'n8n-ai-chat-widget';
-import 'n8n-ai-chat-widget/dist/index.css';
+import { FloatingChatWidget } from "n8n-ai-chat-widget";
+import "n8n-ai-chat-widget/dist/index.css";
 
 function App() {
   return (
@@ -74,10 +72,11 @@ function App() {
       apiUrl="https://your-n8n-instance.com/webhook/chat"
       position="bottom-right"
       themeColor="#4F8CFF"
+      cleanTheme={true} // Use clean theme with white background
       title="Customer Support"
       placeholder="Type your message..."
       welcomeMessage="Welcome! How can we help you today?"
-      bubbleIcon="🤖"
+      bubbleIcon="🤖" // or use an image URL
       width={400}
       height={600}
       fontFamily="'Inter', sans-serif"
@@ -90,8 +89,8 @@ function App() {
 ### With SSE Streaming (Real-time Responses)
 
 ```tsx
-import { FloatingChatWidget } from 'n8n-ai-chat-widget';
-import 'n8n-ai-chat-widget/dist/index.css';
+import { FloatingChatWidget } from "n8n-ai-chat-widget";
+import "n8n-ai-chat-widget/dist/index.css";
 
 function App() {
   return (
@@ -108,12 +107,12 @@ function App() {
 ### With Custom Message Handling
 
 ```tsx
-import { FloatingChatWidget } from 'n8n-ai-chat-widget';
-import 'n8n-ai-chat-widget/dist/index.css';
+import { FloatingChatWidget } from "n8n-ai-chat-widget";
+import "n8n-ai-chat-widget/dist/index.css";
 
 function App() {
   const handleUserRequest = (text: string) => {
-    console.log('User sent:', text);
+    console.log("User sent:", text);
     // You can add custom logic here before or instead of sending to n8n
   };
 
@@ -130,36 +129,66 @@ function App() {
 
 ## 🛠️ Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `apiUrl` | `string` | **Required** | Your n8n webhook/chat endpoint URL |
-| `position` | `'bottom-left' \| 'bottom-right'` | `'bottom-right'` | Position of the chat bubble |
-| `themeColor` | `string` | `'#FF69B4'` | Primary theme color (used for bubble and header) |
-| `bubbleIcon` | `React.ReactNode` | `'😺'` | Icon displayed in the chat bubble (emoji, SVG, or component) |
-| `title` | `string` | `'AI Chat'` | Header title text |
-| `placeholder` | `string` | `'Type your message...'` | Input field placeholder text |
-| `welcomeMessage` | `string` | `'Hi! How can I help you today?'` | Initial greeting message from bot |
-| `zIndex` | `number` | `9999` | CSS z-index for the widget |
-| `width` | `number` | `350` | Widget width in pixels |
-| `height` | `number` | `500` | Widget height in pixels |
-| `fontFamily` | `string` | `'inherit'` | Font family for all text |
-| `debug` | `boolean` | `false` | Enable console logging for debugging |
-| `sessionId` | `string` | auto-generated | Custom session ID for API tracking |
-| `streaming` | `boolean` | `false` | Enable Server-Sent Events (SSE) streaming for real-time responses |
-| `onUserRequest` | `(text: string) => void` | `undefined` | Callback fired when user sends a message (overrides default API call) |
+| Prop             | Type                              | Default                           | Description                                                            |
+| ---------------- | --------------------------------- | --------------------------------- | ---------------------------------------------------------------------- |
+| `apiUrl`         | `string`                          | **Required**                      | Your n8n webhook/chat endpoint URL                                     |
+| `position`       | `'bottom-left' \| 'bottom-right'` | `'bottom-right'`                  | Position of the chat bubble                                            |
+| `themeColor`     | `string`                          | `'#FF6B35'`                       | Primary theme color (used for bubble, buttons, and accents)            |
+| `cleanTheme`     | `boolean`                         | `false`                           | Enable clean theme mode (white background, removes colored header)     |
+| `bubbleIcon`     | `string \| React.ReactNode`       | `'😺'`                            | Icon for chat bubble - supports emoji, image URLs, or React components |
+| `title`          | `string`                          | `'AI Chat'`                       | Header title text                                                      |
+| `placeholder`    | `string`                          | `'Type your message...'`          | Input field placeholder text                                           |
+| `welcomeMessage` | `string`                          | `'Hi! How can I help you today?'` | Initial greeting message from bot                                      |
+| `zIndex`         | `number`                          | `9999`                            | CSS z-index for the widget                                             |
+| `width`          | `number`                          | `350`                             | Widget width in pixels                                                 |
+| `height`         | `number`                          | `500`                             | Widget height in pixels                                                |
+| `fontFamily`     | `string`                          | `'inherit'`                       | Font family for all text                                               |
+| `debug`          | `boolean`                         | `false`                           | Enable console logging for debugging                                   |
+| `sessionId`      | `string`                          | auto-generated                    | Custom session ID for API tracking                                     |
+| `streaming`      | `boolean`                         | `false`                           | Enable Server-Sent Events (SSE) streaming for real-time responses      |
+| `onUserRequest`  | `(text: string) => void`          | `undefined`                       | Callback fired when user sends a message (overrides default API call)  |
 
 ---
 
 ## 🎨 Customization Examples
 
-### Custom Icon with SVG
+### Custom Icon Options
+
+**Using an Emoji:**
+
+```tsx
+<FloatingChatWidget
+  apiUrl="https://your-n8n.com/webhook/chat"
+  bubbleIcon="🤖"
+/>
+```
+
+**Using an Image URL:**
+
+```tsx
+<FloatingChatWidget
+  apiUrl="https://your-n8n.com/webhook/chat"
+  bubbleIcon="https://example.com/logo.png"
+/>
+```
+
+**Using a Local Image:**
+
+```tsx
+<FloatingChatWidget
+  apiUrl="https://your-n8n.com/webhook/chat"
+  bubbleIcon="/images/chat-icon.png"
+/>
+```
+
+**Using a Custom SVG Component:**
 
 ```tsx
 <FloatingChatWidget
   apiUrl="https://your-n8n.com/webhook/chat"
   bubbleIcon={
     <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
     </svg>
   }
 />
@@ -184,21 +213,31 @@ function App() {
 ### Custom Color Themes
 
 ```tsx
-// Blue theme
+// Default orange/coral theme (clean modern look)
 <FloatingChatWidget
   apiUrl="https://your-n8n.com/webhook/chat"
+  cleanTheme={true}
+  themeColor="#FF6B35"
+/>
+
+// Blue theme with clean design
+<FloatingChatWidget
+  apiUrl="https://your-n8n.com/webhook/chat"
+  cleanTheme={true}
   themeColor="#2563EB"
 />
 
 // Green theme
 <FloatingChatWidget
   apiUrl="https://your-n8n.com/webhook/chat"
+  cleanTheme={true}
   themeColor="#10B981"
 />
 
-// Purple theme
+// Purple theme with colored header (cleanTheme=false)
 <FloatingChatWidget
   apiUrl="https://your-n8n.com/webhook/chat"
+  cleanTheme={false}
   themeColor="#8B5CF6"
 />
 ```
@@ -210,6 +249,7 @@ function App() {
 The widget expects your n8n endpoint to:
 
 ### Request Format
+
 ```json
 {
   "message": "User's message text",
@@ -218,9 +258,11 @@ The widget expects your n8n endpoint to:
 ```
 
 ### Response Format (Standard)
+
 The widget supports two response formats:
 
 **Option 1: Using `reply` field**
+
 ```json
 {
   "reply": "Bot's response text"
@@ -228,6 +270,7 @@ The widget supports two response formats:
 ```
 
 **Option 2: Using `output` field**
+
 ```json
 {
   "output": "Bot's response text"
@@ -235,6 +278,7 @@ The widget supports two response formats:
 ```
 
 ### Response Format (Streaming)
+
 When `streaming={true}` is enabled, the widget expects n8n's streaming format (newline-delimited JSON):
 
 ```json
@@ -246,6 +290,7 @@ When `streaming={true}` is enabled, the widget expects n8n's streaming format (n
 ```
 
 **Key Points:**
+
 - Each line is a separate JSON object
 - `type: "begin"` marks the start of the stream
 - `type: "item"` contains content chunks in the `content` field
@@ -253,6 +298,7 @@ When `streaming={true}` is enabled, the widget expects n8n's streaming format (n
 - The `metadata` field is optional and ignored by the widget
 
 **Benefits of Streaming:**
+
 - Real-time response display as the AI generates text
 - Better user experience with immediate feedback
 - Lower perceived latency
@@ -261,11 +307,13 @@ When `streaming={true}` is enabled, the widget expects n8n's streaming format (n
 ### Example n8n Workflow
 
 **Standard Response:**
+
 1. **Webhook Trigger**: Set to POST method
 2. **Process Message**: Your AI logic (OpenAI, etc.)
 3. **Respond to Webhook**: Return JSON with `reply` or `output` field
 
 **Streaming Response:**
+
 1. **Webhook Trigger**: Set to POST method
 2. **AI Agent Node**: Configure with streaming enabled
 3. **Response**: n8n automatically handles the streaming format with `type: "begin"`, `type: "item"`, and `type: "end"` messages
@@ -277,11 +325,12 @@ When `streaming={true}` is enabled, the widget expects n8n's streaming format (n
 The widget automatically formats markdown in bot responses:
 
 - **Bold**: `**text**` → **text**
-- *Italic*: `*text*` → *text*
+- _Italic_: `*text*` → _text_
 - Lists: `- item` → • item
 - Line breaks: `\n` → new line
 
 Example bot response:
+
 ```
 **Welcome!** Here's what I can help with:
 - Answer questions
@@ -327,7 +376,11 @@ npm link n8n-ai-chat-widget
 The package includes full TypeScript definitions. Import types as needed:
 
 ```tsx
-import { FloatingChatWidget, FloatingChatWidgetProps, Message } from 'n8n-ai-chat-widget';
+import {
+  FloatingChatWidget,
+  FloatingChatWidgetProps,
+  Message,
+} from "n8n-ai-chat-widget";
 ```
 
 ---
