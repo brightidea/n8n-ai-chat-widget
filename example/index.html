@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>n8n AI Chat Widget - React Demo</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f0f2f5;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      h1 {
+        margin-top: 48px;
+        color: #4f8cff;
+      }
+      .desc {
+        color: #333;
+        margin-bottom: 32px;
+        text-align: center;
+        max-width: 600px;
+        padding: 0 20px;
+      }
+      .container {
+        max-width: 800px;
+        padding: 20px;
+      }
+      .code-block {
+        background: #2d2d2d;
+        color: #f8f8f2;
+        padding: 16px;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 20px 0;
+      }
+      code {
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>n8n AI Chat Widget Demo</h1>
+    <div class="desc">
+      This is a React-based AI chat widget component that can be embedded on any
+      website.<br />
+      Click the bubble in the bottom-right corner to start chatting!
+    </div>
+
+    <div class="container">
+      <h2>Installation</h2>
+      <div class="code-block">
+        <code>npm install n8n-ai-chat-widget</code>
+      </div>
+
+      <h2>Basic Usage</h2>
+      <div class="code-block">
+        <code>
+          import { FloatingChatWidget } from 'n8n-ai-chat-widget';<br />
+          import 'n8n-ai-chat-widget/dist/FloatingChatWidget.css';<br />
+          <br />
+          function App() {<br />
+          &nbsp;&nbsp;return (<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&lt;FloatingChatWidget<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;apiUrl="https://your-n8n.com/webhook/chat"<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;title="AI Assistant"<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;/&gt;<br />
+          &nbsp;&nbsp;);<br />
+          }
+        </code>
+      </div>
+    </div>
+
+    <!-- The widget will be mounted here by React -->
+    <div id="root"></div>
+
+    <script type="module" src="./demo.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+# Source files (only include built dist/)
+src/
+example/
+old_vanilla_js/
+
+# Development files
+tsconfig.json
+rollup.config.js
+.gitignore
+MIGRATION.md
+
+# Git
+.git/
+.github/
+
+# Node
+node_modules/
+
+# Misc
+.DS_Store
+*.log
+.vscode/
+.idea/

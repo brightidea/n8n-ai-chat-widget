@@ -1,124 +1,305 @@
-# Floating Chat Widget 浮動聊天小部件
+# n8n AI Chat Widget
 
-## 📝 Introduction | 簡介
+A lightweight, customizable React chat widget component for n8n AI agents. Features a beautiful pink theme, smooth animations, markdown support, and seamless n8n integration.
 
-**Floating Chat Widget** is a pure JavaScript, dependency-free, highly customizable floating AI chat widget. Easily embeddable on any website, it connects to an n8n AI agent API. Features a cute pink theme, smooth animations, emoji/SVG bubble icon, and customizable reply logic.
+![Demo Screenshots](https://github.com/user-attachments/assets/d2695e54-b47a-4fcc-b2a5-756e1c120fc1)
 
-**浮動聊天小部件**是一個純 JavaScript、無依賴、可高度自訂的 AI 聊天元件。可輕鬆嵌入任何網站，支援連接 n8n AI agent API，粉嫩主題、流暢動畫、可愛 icon，並可自訂回覆行為。
-![image](https://github.com/user-attachments/assets/d2695e54-b47a-4fcc-b2a5-756e1c120fc1)
-![image](https://github.com/user-attachments/assets/870a0013-3ad1-4760-9a64-26800b2e5003)
-![image](https://github.com/user-attachments/assets/58b3938d-0b25-44ad-82a4-894bcf03c1a5)
-
-DEMO : https://n8n-ai-chat-widget.hkdesv.com/demo-floating-chat-widget
----
-
-## 🚀 Quick Start | 快速開始
-
-1. **Include the JS file | 引入 JS 檔案**
-   ```html
-   <script src="floating-chat-widget.js"></script>
-   ```
-
-2. **Initialize the widget | 初始化小部件**
-   ```html
-   <script>
-     FloatingChatWidget.init({
-       themeColor: '#FF69B4',
-       title: 'AI 助理',
-       placeholder: '請輸入訊息...',
-       welcomeMessage: '您好！有什麼可以幫您？',
-       debug: true,
-       position: 'bottom-right',
-       fontFamily: 'Segoe UI, Noto Sans TC, Arial, sans-serif',
-       // bubbleIcon: '😺', // Default is a cute cat emoji, you can use SVG/HTML
-       apiUrl: {{your_n8n_api}}
-     });
-   </script>
-   ```
-
-3. **Demo Example | 範例**
-   See `demo-floating-chat-widget.html` for a ready-to-use example.
+**[Live Demo](https://n8n-ai-chat-widget.hkdesv.com/demo-floating-chat-widget)**
 
 ---
 
-## ✨ Features | 主要特性
+## ✨ Features
 
-- 💬 Pure JavaScript, no dependencies | 無依賴、輕量級
-- 🎨 Cute pink theme, easily customizable | 粉嫩主題、易於自訂
-- 🐱 Emoji/SVG/HTML bubble icon (default: 😺) | 可愛 icon
-- 📱 Responsive design | 響應式設計
-- ✨ Smooth animations, loading/streaming effect | 流暢動畫、逐字顯示
-- 🔗 Connects to n8n AI agent API | API 連接
-- 🛠️ Highly customizable | 高度自訂
-- 📝 Supports Markdown in bot reply | 支援 Markdown
-- 🧩 Custom onUserRequest callback | 可自訂 onUserRequest 攔截
-
----
-
-## 🛠️ Options | 參數說明
-
-| Option (參數)   | Description (說明)                | Default (預設)      |
-|-----------------|-----------------------------------|---------------------|
-| apiUrl          | n8n API endpoint                  | .../chat            |
-| position        | Bubble position                   | 'bottom-right'      |
-| themeColor      | Theme color                       | '#FF69B4'           |
-| bubbleIcon      | Bubble icon (emoji/SVG/HTML)      | '😺'                |
-| title           | Header title                      | 'AI Chat'           |
-| placeholder     | Input placeholder                 | 'Type your message...'|
-| welcomeMessage  | Welcome message                   | 'Hi! How can I help you today?' |
-| zIndex          | z-index                           | 9999                |
-| width           | Width                             | 350                 |
-| height          | Height                            | 500                 |
-| fontFamily      | Font family                       | 'inherit'           |
-| debug           | Debug mode                        | false               |
-| sessionId       | Session ID                        | auto-generated      |
+- 💬 **Lightweight React Component** - Built with TypeScript, fully typed
+- 🎨 **Customizable Theme** - Easy color, font, and icon customization
+- 🐱 **Flexible Icons** - Use emoji, SVG, or custom React components
+- 📱 **Responsive Design** - Works beautifully on all screen sizes
+- ✨ **Smooth Animations** - Polished UI with loading indicators
+- 🔗 **n8n Integration** - Direct connection to n8n AI agent APIs
+- 📝 **Markdown Support** - Rich text formatting in bot replies
+- 🛠️ **Highly Customizable** - Override any behavior with callbacks
+- 🎯 **Zero Dependencies** - Only requires React as a peer dependency
 
 ---
 
-## 🎨 Customization | 客製化建議
+## 📦 Installation
 
-- Use emoji, SVG, or HTML for the icon | 可用 emoji、SVG、HTML 當作 icon
-- Change color, font, welcome message  | 可自訂顏色、字型、歡迎詞
-- Supports streaming/逐字顯示, loading animation
-- Supports Markdown (**bold**, *italic*, - list, line break)
-
----
-
-## 🔬 Advanced Usage | 進階用法
-
-### Intercept user request | 攔截用戶訊息
-```js
-FloatingChatWidget.onUserRequest(function (text) {
-  // Custom logic here
-  setTimeout(function () {
-    FloatingChatWidget.reply('這是自訂回覆：' + text);
-  }, 800);
-});
+```bash
+npm install n8n-ai-chat-widget
 ```
 
-### Custom icon | 自訂 icon
-```js
-FloatingChatWidget.init({
-  bubbleIcon: '🤖', // or SVG/HTML
-});
+or
+
+```bash
+yarn add n8n-ai-chat-widget
 ```
 
-### Session
-- Default: auto-generated, or set manually
-  ```js
-  FloatingChatWidget.init({
-    sessionId: 'your-session-id',
-  });
-  ```
+**Requirements:**
+- React 16.8+
 
 ---
 
-## 📄 License | 授權
+## 🚀 Quick Start
+
+### Basic Usage
+
+```tsx
+import { FloatingChatWidget } from 'n8n-ai-chat-widget';
+import 'n8n-ai-chat-widget/dist/index.css';
+
+function App() {
+  return (
+    <div>
+      <h1>My Website</h1>
+      <FloatingChatWidget
+        apiUrl="https://your-n8n-instance.com/webhook/chat"
+        title="AI Assistant"
+        welcomeMessage="Hi! How can I help you today?"
+      />
+    </div>
+  );
+}
+```
+
+### With Custom Styling
+
+```tsx
+import { FloatingChatWidget } from 'n8n-ai-chat-widget';
+import 'n8n-ai-chat-widget/dist/index.css';
+
+function App() {
+  return (
+    <FloatingChatWidget
+      apiUrl="https://your-n8n-instance.com/webhook/chat"
+      position="bottom-right"
+      themeColor="#4F8CFF"
+      title="Customer Support"
+      placeholder="Type your message..."
+      welcomeMessage="Welcome! How can we help you today?"
+      bubbleIcon="🤖"
+      width={400}
+      height={600}
+      fontFamily="'Inter', sans-serif"
+      debug={true}
+    />
+  );
+}
+```
+
+### With Custom Message Handling
+
+```tsx
+import { FloatingChatWidget } from 'n8n-ai-chat-widget';
+import 'n8n-ai-chat-widget/dist/index.css';
+
+function App() {
+  const handleUserRequest = (text: string) => {
+    console.log('User sent:', text);
+    // You can add custom logic here before or instead of sending to n8n
+  };
+
+  return (
+    <FloatingChatWidget
+      apiUrl="https://your-n8n-instance.com/webhook/chat"
+      onUserRequest={handleUserRequest}
+    />
+  );
+}
+```
+
+---
+
+## 🛠️ Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `apiUrl` | `string` | **Required** | Your n8n webhook/chat endpoint URL |
+| `position` | `'bottom-left' \| 'bottom-right'` | `'bottom-right'` | Position of the chat bubble |
+| `themeColor` | `string` | `'#FF69B4'` | Primary theme color (used for bubble and header) |
+| `bubbleIcon` | `React.ReactNode` | `'😺'` | Icon displayed in the chat bubble (emoji, SVG, or component) |
+| `title` | `string` | `'AI Chat'` | Header title text |
+| `placeholder` | `string` | `'Type your message...'` | Input field placeholder text |
+| `welcomeMessage` | `string` | `'Hi! How can I help you today?'` | Initial greeting message from bot |
+| `zIndex` | `number` | `9999` | CSS z-index for the widget |
+| `width` | `number` | `350` | Widget width in pixels |
+| `height` | `number` | `500` | Widget height in pixels |
+| `fontFamily` | `string` | `'inherit'` | Font family for all text |
+| `debug` | `boolean` | `false` | Enable console logging for debugging |
+| `sessionId` | `string` | auto-generated | Custom session ID for API tracking |
+| `onUserRequest` | `(text: string) => void` | `undefined` | Callback fired when user sends a message (overrides default API call) |
+
+---
+
+## 🎨 Customization Examples
+
+### Custom Icon with SVG
+
+```tsx
+<FloatingChatWidget
+  apiUrl="https://your-n8n.com/webhook/chat"
+  bubbleIcon={
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+    </svg>
+  }
+/>
+```
+
+### Different Positions
+
+```tsx
+// Bottom left
+<FloatingChatWidget
+  apiUrl="https://your-n8n.com/webhook/chat"
+  position="bottom-left"
+/>
+
+// Bottom right (default)
+<FloatingChatWidget
+  apiUrl="https://your-n8n.com/webhook/chat"
+  position="bottom-right"
+/>
+```
+
+### Custom Color Themes
+
+```tsx
+// Blue theme
+<FloatingChatWidget
+  apiUrl="https://your-n8n.com/webhook/chat"
+  themeColor="#2563EB"
+/>
+
+// Green theme
+<FloatingChatWidget
+  apiUrl="https://your-n8n.com/webhook/chat"
+  themeColor="#10B981"
+/>
+
+// Purple theme
+<FloatingChatWidget
+  apiUrl="https://your-n8n.com/webhook/chat"
+  themeColor="#8B5CF6"
+/>
+```
+
+---
+
+## 🔌 n8n API Integration
+
+The widget expects your n8n endpoint to:
+
+### Request Format
+```json
+{
+  "message": "User's message text",
+  "sessionId": "unique-session-id"
+}
+```
+
+### Response Format
+The widget supports two response formats:
+
+**Option 1: Using `reply` field**
+```json
+{
+  "reply": "Bot's response text"
+}
+```
+
+**Option 2: Using `output` field**
+```json
+{
+  "output": "Bot's response text"
+}
+```
+
+### Example n8n Workflow
+
+1. **Webhook Trigger**: Set to POST method
+2. **Process Message**: Your AI logic (OpenAI, etc.)
+3. **Respond to Webhook**: Return JSON with `reply` or `output` field
+
+---
+
+## 📝 Markdown Support
+
+The widget automatically formats markdown in bot responses:
+
+- **Bold**: `**text**` → **text**
+- *Italic*: `*text*` → *text*
+- Lists: `- item` → • item
+- Line breaks: `\n` → new line
+
+Example bot response:
+```
+**Welcome!** Here's what I can help with:
+- Answer questions
+- Provide information
+- Assist with tasks
+
+*How can I help you today?*
+```
+
+---
+
+## 🧪 Development
+
+### Building the Package
+
+```bash
+# Install dependencies
+npm install
+
+# Build for production
+npm run build
+
+# Build and watch for changes
+npm run dev
+```
+
+### Testing Locally
+
+You can test the package locally using `npm link`:
+
+```bash
+# In the widget package directory
+npm link
+
+# In your test project
+npm link n8n-ai-chat-widget
+```
+
+---
+
+## 📄 TypeScript Support
+
+The package includes full TypeScript definitions. Import types as needed:
+
+```tsx
+import { FloatingChatWidget, FloatingChatWidgetProps, Message } from 'n8n-ai-chat-widget';
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+## 📄 License
 
 MIT
 
 ---
 
-如需更多協助，請隨時聯絡作者或提出 issue！
+## 🐛 Issues & Support
 
-If you need further help, feel free to contact the author or open an issue! 
+If you encounter any issues or have questions, please [open an issue](https://github.com/yourusername/n8n-ai-chat-widget/issues) on GitHub.
+
+---
+
+## 🙏 Acknowledgments
+
+Built for the n8n community with ❤️
