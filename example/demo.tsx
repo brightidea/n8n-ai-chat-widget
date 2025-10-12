@@ -13,6 +13,7 @@ function Demo() {
       fontFamily="'Segoe UI', Arial, sans-serif"
       debug={true}
       bubbleIcon="🤖"
+      streaming={true} // Enable SSE streaming responses
     />
   );
 }

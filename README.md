@@ -17,6 +17,7 @@ A lightweight, customizable React chat widget component for n8n AI agents. Featu
 - ✨ **Smooth Animations** - Polished UI with loading indicators
 - 🔗 **n8n Integration** - Direct connection to n8n AI agent APIs
 - 📝 **Markdown Support** - Rich text formatting in bot replies
+- 🌊 **SSE Streaming** - Real-time streaming responses for faster UX
 - 🛠️ **Highly Customizable** - Override any behavior with callbacks
 - 🎯 **Zero Dependencies** - Only requires React as a peer dependency
 
@@ -86,6 +87,24 @@ function App() {
 }
 ```
 
+### With SSE Streaming (Real-time Responses)
+
+```tsx
+import { FloatingChatWidget } from 'n8n-ai-chat-widget';
+import 'n8n-ai-chat-widget/dist/index.css';
+
+function App() {
+  return (
+    <FloatingChatWidget
+      apiUrl="https://your-n8n-instance.com/webhook/chat"
+      streaming={true} // Enable Server-Sent Events streaming
+      title="AI Assistant"
+      welcomeMessage="Hi! Ask me anything and watch the response stream in real-time!"
+    />
+  );
+}
+```
+
 ### With Custom Message Handling
 
 ```tsx
@@ -126,6 +145,7 @@ function App() {
 | `fontFamily` | `string` | `'inherit'` | Font family for all text |
 | `debug` | `boolean` | `false` | Enable console logging for debugging |
 | `sessionId` | `string` | auto-generated | Custom session ID for API tracking |
+| `streaming` | `boolean` | `false` | Enable Server-Sent Events (SSE) streaming for real-time responses |
 | `onUserRequest` | `(text: string) => void` | `undefined` | Callback fired when user sends a message (overrides default API call) |
 
 ---
@@ -197,7 +217,7 @@ The widget expects your n8n endpoint to:
 }
 ```
 
-### Response Format
+### Response Format (Standard)
 The widget supports two response formats:
 
 **Option 1: Using `reply` field**
@@ -214,11 +234,41 @@ The widget supports two response formats:
 }
 ```
 
+### Response Format (Streaming)
+When `streaming={true}` is enabled, the widget expects n8n's streaming format (newline-delimited JSON):
+
+```json
+{"type": "begin", "metadata": {...}}
+{"type": "item", "content": "First ", "metadata": {...}}
+{"type": "item", "content": "chunk ", "metadata": {...}}
+{"type": "item", "content": "of text", "metadata": {...}}
+{"type": "end", "metadata": {...}}
+```
+
+**Key Points:**
+- Each line is a separate JSON object
+- `type: "begin"` marks the start of the stream
+- `type: "item"` contains content chunks in the `content` field
+- `type: "end"` marks the end of the stream
+- The `metadata` field is optional and ignored by the widget
+
+**Benefits of Streaming:**
+- Real-time response display as the AI generates text
+- Better user experience with immediate feedback
+- Lower perceived latency
+- Animated cursor shows active streaming
+
 ### Example n8n Workflow
 
+**Standard Response:**
 1. **Webhook Trigger**: Set to POST method
 2. **Process Message**: Your AI logic (OpenAI, etc.)
 3. **Respond to Webhook**: Return JSON with `reply` or `output` field
+
+**Streaming Response:**
+1. **Webhook Trigger**: Set to POST method
+2. **AI Agent Node**: Configure with streaming enabled
+3. **Response**: n8n automatically handles the streaming format with `type: "begin"`, `type: "item"`, and `type: "end"` messages
 
 ---
 

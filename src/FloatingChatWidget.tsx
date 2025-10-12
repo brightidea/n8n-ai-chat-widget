@@ -1,17 +1,19 @@
-import React, { useState, useRef, useEffect, FormEvent } from 'react';
-import './styles.css';
+import React, { useState, useRef, useEffect, FormEvent } from "react";
+import "./styles.css";
 
 export interface Message {
-  sender: 'user' | 'bot';
+  sender: "user" | "bot";
   text: string;
   id: string;
+  isStreaming?: boolean;
 }
 
 export interface FloatingChatWidgetProps {
   apiUrl: string;
-  position?: 'bottom-left' | 'bottom-right';
+  position?: "bottom-left" | "bottom-right";
+  cleanTheme?: boolean;
   themeColor?: string;
-  bubbleIcon?: React.ReactNode;
+  bubbleIcon?: string | React.ReactNode; // Can be emoji string, image URL, or React element
   title?: string;
   placeholder?: string;
   welcomeMessage?: string;
@@ -22,24 +24,29 @@ export interface FloatingChatWidgetProps {
   debug?: boolean;
   sessionId?: string;
   onUserRequest?: (text: string) => void;
+  streaming?: boolean; // Enable SSE streaming responses
 }
 
-const DEFAULT_CONFIG: Required<Omit<FloatingChatWidgetProps, 'apiUrl' | 'onUserRequest'>> & {
+const DEFAULT_CONFIG: Required<
+  Omit<FloatingChatWidgetProps, "apiUrl" | "onUserRequest">
+> & {
   apiUrl: string;
 } = {
-  apiUrl: '{{your_n8n_api}}',
-  position: 'bottom-right',
-  themeColor: '#FF69B4',
-  bubbleIcon: '😺',
-  title: 'AI Chat',
-  placeholder: 'Type your message...',
-  welcomeMessage: 'Hi! How can I help you today?',
+  apiUrl: "{{your_n8n_api}}",
+  position: "bottom-right",
+  cleanTheme: false,
+  themeColor: "#FF6B35",
+  bubbleIcon: "😺",
+  title: "AI Chat",
+  placeholder: "Type your message...",
+  welcomeMessage: "Hi! How can I help you today?",
   zIndex: 9999,
   width: 350,
   height: 500,
-  fontFamily: 'inherit',
+  fontFamily: "inherit",
   debug: false,
-  sessionId: '',
+  sessionId: "",
+  streaming: false,
 };
 
 /**
@@ -51,33 +58,38 @@ const DEFAULT_CONFIG: Required<Omit<FloatingChatWidgetProps, 'apiUrl' | 'onUserR
  * - Easily customizable
  * - Connects to n8n AI agent API
  * - Markdown support
- * - Streaming text effect
+ * - SSE streaming support for real-time responses
+ * - Streaming text cursor animation
  */
-export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (props) => {
+export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
+  props
+) => {
   const config = { ...DEFAULT_CONFIG, ...props };
 
   // Generate session ID if not provided
-  const [sessionId] = useState(() =>
-    config.sessionId || `fcw-${Math.random().toString(36).slice(2)}${Date.now()}`
+  const [sessionId] = useState(
+    () =>
+      config.sessionId ||
+      `fcw-${Math.random().toString(36).slice(2)}${Date.now()}`
   );
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const log = (...args: any[]) => {
     if (config.debug) {
-      console.log('[FloatingChatWidget]', ...args);
+      console.log("[FloatingChatWidget]", ...args);
     }
   };
 
   // Add welcome message on mount
   useEffect(() => {
     if (config.welcomeMessage) {
-      addMessage('bot', config.welcomeMessage);
+      addMessage("bot", config.welcomeMessage);
     }
   }, []);
 
@@ -94,31 +106,139 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (props) => 
   }, [isOpen]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const addMessage = (sender: 'user' | 'bot', text: string) => {
+  const addMessage = (
+    sender: "user" | "bot",
+    text: string,
+    id?: string,
+    isStreaming?: boolean
+  ) => {
     const newMessage: Message = {
       sender,
       text,
-      id: `msg-${Date.now()}-${Math.random()}`,
+      id: id || `msg-${Date.now()}-${Math.random()}`,
+      isStreaming,
     };
     setMessages((prev) => [...prev, newMessage]);
-    log('Message added:', sender, text);
+    log("Message added:", sender, text);
+    return newMessage.id;
+  };
+
+  const updateMessage = (id: string, text: string, isStreaming?: boolean) => {
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === id ? { ...msg, text, isStreaming } : msg))
+    );
   };
 
   const formatMarkdown = (text: string): string => {
     let html = text
-      .replace(/\n/g, '<br>')
-      .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-      .replace(/\*(.+?)\*/g, '<i>$1</i>')
-      .replace(/\- (.+)/g, '<li>$1</li>');
+      .replace(/\n/g, "<br>")
+      .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+      .replace(/\*(.+?)\*/g, "<i>$1</i>")
+      .replace(/\- (.+)/g, "<li>$1</li>");
 
     // Wrap list items in ul
     if (/<li>/.test(html)) {
-      html = '<ul>' + html + '</ul>';
+      html = "<ul>" + html + "</ul>";
     }
     return html;
+  };
+
+  const sendToApiStreaming = async (text: string) => {
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(config.apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, chatInput: text, sessionId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error("No response body reader available");
+      }
+
+      let messageId: string | null = null;
+      let accumulatedText = "";
+      let buffer = "";
+      let hasStartedStreaming = false;
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          log("Stream complete");
+          if (messageId) {
+            // Mark streaming as complete
+            updateMessage(messageId, accumulatedText, false);
+          }
+          setIsLoading(false);
+          break;
+        }
+
+        // Decode the chunk and add to buffer
+        buffer += decoder.decode(value, { stream: true });
+
+        // Split by newlines to get individual JSON objects
+        const lines = buffer.split("\n");
+
+        // Keep the last incomplete line in the buffer
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine) continue;
+
+          try {
+            const parsed = JSON.parse(trimmedLine);
+
+            // Handle n8n streaming format
+            if (parsed.type === "item" && parsed.content) {
+              // First content chunk - create message and hide loading
+              if (!hasStartedStreaming) {
+                setIsLoading(false);
+                messageId = addMessage("bot", "", undefined, true);
+                hasStartedStreaming = true;
+              }
+
+              accumulatedText += parsed.content;
+              if (messageId) {
+                updateMessage(messageId, accumulatedText, true);
+              }
+              log("Streamed chunk:", parsed.content);
+            } else if (parsed.type === "begin") {
+              log("Stream begin");
+            } else if (parsed.type === "end") {
+              log("Stream end");
+              if (messageId) {
+                // Mark streaming as complete
+                updateMessage(messageId, accumulatedText, false);
+              }
+            }
+          } catch (e) {
+            log("Failed to parse streaming JSON:", trimmedLine, e);
+          }
+        }
+      }
+
+      if (!accumulatedText) {
+        setIsLoading(false);
+        addMessage("bot", "Sorry, I did not understand that.");
+      }
+    } catch (err) {
+      setIsLoading(false);
+      log("API streaming error:", err);
+      addMessage("bot", "Error connecting to AI agent.");
+    }
   };
 
   const sendToApi = async (text: string) => {
@@ -126,15 +246,15 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (props) => 
 
     try {
       const response = await fetch(config.apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, sessionId }),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, chatInput: text, sessionId }),
       });
 
       const data = await response.json();
       setIsLoading(false);
 
-      let reply = '';
+      let reply = "";
       if (data?.reply) {
         reply = data.reply;
       } else if (data?.output) {
@@ -142,15 +262,15 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (props) => 
       }
 
       if (reply) {
-        addMessage('bot', reply);
+        addMessage("bot", reply);
       } else {
-        log('API raw response:', data);
-        addMessage('bot', 'Sorry, I did not understand that.');
+        log("API raw response:", data);
+        addMessage("bot", "Sorry, I did not understand that.");
       }
     } catch (err) {
       setIsLoading(false);
-      log('API error:', err);
-      addMessage('bot', 'Error connecting to AI agent.');
+      log("API error:", err);
+      addMessage("bot", "Error connecting to AI agent.");
     }
   };
 
@@ -159,22 +279,57 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (props) => 
     const text = inputValue.trim();
     if (!text) return;
 
-    addMessage('user', text);
-    setInputValue('');
+    addMessage("user", text);
+    setInputValue("");
 
     if (props.onUserRequest) {
       props.onUserRequest(text);
     } else {
-      sendToApi(text);
+      // Use streaming or regular API based on config
+      if (config.streaming) {
+        sendToApiStreaming(text);
+      } else {
+        sendToApi(text);
+      }
     }
   };
 
   const toggleWidget = () => {
     setIsOpen((prev) => !prev);
-    log('Widget toggled:', !isOpen);
+    log("Widget toggled:", !isOpen);
   };
 
-  const positionClass = config.position === 'bottom-left' ? 'left-6' : 'right-6';
+  const positionClass =
+    config.position === "bottom-left" ? "left-6" : "right-6";
+
+  // Helper to check if string is an image URL
+  const isImageUrl = (str: string): boolean => {
+    return /\.(jpg|jpeg|png|gif|svg|webp)$/i.test(str) || str.startsWith('data:image/') || str.startsWith('http');
+  };
+
+  // Render bubble icon based on type
+  const renderBubbleIcon = () => {
+    if (typeof config.bubbleIcon === "string") {
+      // Check if it's an image URL
+      if (isImageUrl(config.bubbleIcon)) {
+        return (
+          <img
+            src={config.bubbleIcon}
+            alt="Chat"
+            className="fcw-bubble-icon-img"
+          />
+        );
+      }
+      // Otherwise treat as emoji or text
+      return (
+        <span className="flex items-center justify-center text-lg w-6 h-6 leading-none">
+          {config.bubbleIcon}
+        </span>
+      );
+    }
+    // React node (custom component)
+    return config.bubbleIcon;
+  };
 
   return (
     <>
@@ -188,18 +343,14 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (props) => 
         }}
         aria-label="Toggle chat"
       >
-        {typeof config.bubbleIcon === 'string' ? (
-          <span className="flex items-center justify-center text-lg w-6 h-6 leading-none">
-            {config.bubbleIcon}
-          </span>
-        ) : (
-          config.bubbleIcon
-        )}
+        {renderBubbleIcon()}
       </button>
 
       {/* Chat widget */}
       <div
-        className={`fcw-chat-widget ${positionClass} ${isOpen ? 'fcw-open' : 'fcw-closed'}`}
+        className={`fcw-chat-widget ${positionClass} ${
+          isOpen ? "fcw-open" : "fcw-closed"
+        }`}
         style={{
           zIndex: config.zIndex,
           width: config.width,
@@ -210,7 +361,9 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (props) => 
         {/* Header */}
         <div
           className="fcw-chat-header"
-          style={{ backgroundColor: config.themeColor }}
+          style={{
+            backgroundColor: config.cleanTheme ? "inherit" : config.themeColor,
+          }}
         >
           {config.title}
         </div>
@@ -220,14 +373,28 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (props) => 
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`fcw-message ${msg.sender === 'user' ? 'fcw-message-user' : 'fcw-message-bot'}`}
+              className={`fcw-message ${
+                msg.sender === "user" ? "fcw-message-user" : "fcw-message-bot"
+              }`}
             >
               <div
                 className={`fcw-message-bubble ${
-                  msg.sender === 'user' ? 'fcw-message-bubble-user' : 'fcw-message-bubble-bot'
-                }`}
-                style={msg.sender === 'user' ? { backgroundColor: config.themeColor } : undefined}
-                dangerouslySetInnerHTML={{ __html: formatMarkdown(msg.text) }}
+                  msg.sender === "user"
+                    ? "fcw-message-bubble-user"
+                    : "fcw-message-bubble-bot"
+                }${msg.isStreaming ? " fcw-streaming" : ""}`}
+                style={
+                  msg.sender === "user"
+                    ? { backgroundColor: config.themeColor }
+                    : undefined
+                }
+                dangerouslySetInnerHTML={{
+                  __html:
+                    formatMarkdown(msg.text) +
+                    (msg.isStreaming
+                      ? '<span class="fcw-cursor">|</span>'
+                      : ""),
+                }}
               />
             </div>
           ))}
