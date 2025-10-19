@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect, FormEvent } from "react";
+// @ts-ignore
 import "./styles.css";
+// @ts-ignore
+import SendIcon from "./send-icon.svg";
 
 export interface Message {
   sender: "user" | "bot";
@@ -15,6 +18,7 @@ export interface FloatingChatWidgetProps {
   themeColor?: string;
   bubbleIcon?: string | React.ReactNode; // Can be emoji string, image URL, or React element
   title?: string;
+  titleIcon?: string; // Image URL or emoji to display alongside the title
   placeholder?: string;
   welcomeMessage?: string;
   zIndex?: number;
@@ -28,16 +32,18 @@ export interface FloatingChatWidgetProps {
 }
 
 const DEFAULT_CONFIG: Required<
-  Omit<FloatingChatWidgetProps, "apiUrl" | "onUserRequest">
+  Omit<FloatingChatWidgetProps, "apiUrl" | "onUserRequest" | "titleIcon">
 > & {
   apiUrl: string;
+  titleIcon?: string;
 } = {
   apiUrl: "{{your_n8n_api}}",
   position: "bottom-right",
   cleanTheme: false,
   themeColor: "#FF6B35",
   bubbleIcon: "😺",
-  title: "AI Chat",
+  title: "",
+  titleIcon: undefined,
   placeholder: "Type your message...",
   welcomeMessage: "Hi! How can I help you today?",
   zIndex: 9999,
@@ -304,7 +310,11 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
 
   // Helper to check if string is an image URL
   const isImageUrl = (str: string): boolean => {
-    return /\.(jpg|jpeg|png|gif|svg|webp)$/i.test(str) || str.startsWith('data:image/') || str.startsWith('http');
+    return (
+      /\.(jpg|jpeg|png|gif|svg|webp)$/i.test(str) ||
+      str.startsWith("data:image/") ||
+      str.startsWith("http")
+    );
   };
 
   // Render bubble icon based on type
@@ -331,6 +341,24 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
     return config.bubbleIcon;
   };
 
+  // Render title icon based on type
+  const renderTitleIcon = () => {
+    if (!config.titleIcon) return null;
+
+    // Check if it's an image URL
+    if (isImageUrl(config.titleIcon)) {
+      return (
+        <img
+          src={config.titleIcon}
+          alt={config.title}
+          className="fcw-title-icon-img"
+        />
+      );
+    }
+    // Otherwise treat as emoji or text
+    return <span className="fcw-title-icon-emoji">{config.titleIcon}</span>;
+  };
+
   return (
     <>
       {/* Bubble button */}
@@ -339,7 +367,9 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
         className={`fcw-chat-bubble ${positionClass}`}
         style={{
           zIndex: config.zIndex,
-          backgroundColor: config.themeColor,
+          backgroundColor: config.cleanTheme
+            ? "transparent"
+            : config.themeColor,
         }}
         aria-label="Toggle chat"
       >
@@ -365,7 +395,10 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
             backgroundColor: config.cleanTheme ? "inherit" : config.themeColor,
           }}
         >
-          {config.title}
+          <div className="fcw-header-content">
+            {renderTitleIcon()}
+            {/* <span className="fcw-header-title">{config.title}</span> */}
+          </div>
         </div>
 
         {/* Messages */}
@@ -384,7 +417,7 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
                     : "fcw-message-bubble-bot"
                 }${msg.isStreaming ? " fcw-streaming" : ""}`}
                 style={
-                  msg.sender === "user"
+                  msg.sender === "user" && !config.cleanTheme
                     ? { backgroundColor: config.themeColor }
                     : undefined
                 }
@@ -426,10 +459,9 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
             type="submit"
             disabled={isLoading || !inputValue.trim()}
             className="fcw-chat-send-btn"
-            style={{ color: config.themeColor }}
             aria-label="Send message"
           >
-            ➤
+            <SendIcon className="fcw-send-icon" />
           </button>
         </form>
       </div>

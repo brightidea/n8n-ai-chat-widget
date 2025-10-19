@@ -2,6 +2,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import postcss from 'rollup-plugin-postcss';
+import svgr from '@svgr/rollup';
 import { readFileSync } from 'fs';
 
 const packageJson = JSON.parse(readFileSync('./package.json', 'utf-8'));
@@ -24,6 +25,7 @@ export default {
   ],
   external: ['react', 'react-dom'],
   plugins: [
+    svgr(),
     resolve(),
     commonjs(),
     postcss({

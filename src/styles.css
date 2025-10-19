@@ -4,8 +4,8 @@
 .fcw-chat-bubble {
   position: fixed;
   bottom: 1.5rem;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 5rem;
+  height: 5rem;
   border-radius: 9999px;
   display: flex;
   align-items: center;
@@ -35,10 +35,11 @@
 
 .fcw-chat-widget {
   position: fixed;
-  bottom: 6rem;
+  bottom: 3rem;
+  right: 3rem;
   max-width: 95vw;
   max-height: 80vh;
-  background-color: #f7f5f3;
+  background-color: #f8f5f2;
   border-radius: 1rem;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
     0 8px 10px -6px rgb(0 0 0 / 0.1);
@@ -63,11 +64,11 @@
 }
 
 .fcw-chat-widget.left-6 {
-  left: 1.5rem;
+  left: 2.5rem;
 }
 
 .fcw-chat-widget.right-6 {
-  right: 1.5rem;
+  right: 2.5rem;
 }
 
 .fcw-chat-header {
@@ -77,15 +78,40 @@
   font-weight: 700;
   border-top-left-radius: 1rem;
   border-top-right-radius: 1rem;
-  background-color: #f7f5f3;
+  background-color: #f8f5f2;
   /* border-bottom: 1px solid #e5e7eb; */
 }
+.fcw-header-content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+}
 
+.fcw-header-title {
+  flex: 1;
+}
+
+.fcw-title-icon-img {
+  width: auto;
+  height: 1.75rem;
+  object-fit: contain;
+  border-radius: 0.25rem;
+}
+
+.fcw-title-icon-emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .fcw-chat-messages {
   flex: 1 1 0%;
   padding: 1rem;
   overflow-y: auto;
-  background-color: #f7f5f3;
+  background-color: #f8f5f2;
 }
 
 .fcw-message {
@@ -112,7 +138,9 @@
 }
 
 .fcw-message-bubble-user {
-  background-color: #f680254d;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: #f7d2b5;
   color: #844210;
 }
 
@@ -164,17 +192,19 @@
 }
 
 .fcw-chat-send-btn {
-  background-color: #c45a094d;
+  background-color: #c45a09;
   border: none;
-  font-size: 1.25rem;
   cursor: pointer;
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
   border-radius: 100%;
-  color: #ffffff;
   min-width: 2.5rem;
+  min-height: 2.5rem;
   opacity: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fcw-chat-send-btn:hover:not(:disabled) {
@@ -185,6 +215,15 @@
   cursor: not-allowed;
   opacity: 0.4;
   background-color: #c45a094d;
+}
+
+.fcw-send-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.fcw-send-icon path {
+  fill: white;
 }
 
 .fcw-loading {
