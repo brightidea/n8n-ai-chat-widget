@@ -31,6 +31,7 @@ export default {
     resolve(),
     commonjs(),
     postcss({
+      config: false, // Disable auto-discovery of config files
       plugins: [
         tailwindcss,
         autoprefixer,
