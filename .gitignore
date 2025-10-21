@@ -11,3 +11,6 @@ dist/
 *~
 coverage/
 .nyc_output/
+postcss.config.js
+postcss.config.cjs
+postcss.config.mjs
