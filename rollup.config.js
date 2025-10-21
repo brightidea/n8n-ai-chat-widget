@@ -3,8 +3,6 @@ import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import postcss from 'rollup-plugin-postcss';
 import svgr from '@svgr/rollup';
-import tailwindcss from '@tailwindcss/postcss';
-import autoprefixer from 'autoprefixer';
 import { readFileSync } from 'fs';
 
 const packageJson = JSON.parse(readFileSync('./package.json', 'utf-8'));
@@ -31,16 +29,6 @@ export default {
     resolve(),
     commonjs(),
     postcss({
-      use: {
-        sass: null,
-        stylus: null,
-        less: null,
-      },
-      config: false,
-      plugins: [
-        tailwindcss(),
-        autoprefixer(),
-      ],
       extensions: ['.css'],
       minimize: true,
       inject: false,
