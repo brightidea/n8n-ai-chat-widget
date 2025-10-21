@@ -79,14 +79,42 @@
   border-top-left-radius: 1rem;
   border-top-right-radius: 1rem;
   background-color: #f8f5f2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
   /* border-bottom: 1px solid #e5e7eb; */
 }
+
 .fcw-header-content {
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.625rem;
+  flex: 1;
+}
+
+.fcw-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0.375rem;
+  margin-left: 0.5rem;
+}
+
+.fcw-close-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #374151;
+}
+
+.fcw-close-btn:active {
+  transform: scale(0.95);
 }
 
 .fcw-header-title {

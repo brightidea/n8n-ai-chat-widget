@@ -398,6 +398,24 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
             {renderTitleIcon()}
             {/* <span className="fcw-header-title">{config.title}</span> */}
           </div>
+          <button
+            onClick={toggleWidget}
+            className="fcw-close-btn"
+            aria-label="Close chat"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12.8536 4.85355C13.0488 4.65829 13.0488 4.34171 12.8536 4.14645C12.6583 3.95118 12.3417 3.95118 12.1464 4.14645L8 8.29289L3.85355 4.14645C3.65829 3.95118 3.34171 3.95118 3.14645 4.14645C2.95118 4.34171 2.95118 4.65829 3.14645 4.85355L7.29289 9L3.14645 13.1464C2.95118 13.3417 2.95118 13.6583 3.14645 13.8536C3.34171 14.0488 3.65829 14.0488 3.85355 13.8536L8 9.70711L12.1464 13.8536C12.3417 14.0488 12.6583 14.0488 12.8536 13.8536C13.0488 13.6583 13.0488 13.3417 12.8536 13.1464L8.70711 9L12.8536 4.85355Z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
         </div>
 
         {/* Messages */}
