@@ -1,7 +1,6 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
-import postcss from 'rollup-plugin-postcss';
 import svgr from '@svgr/rollup';
 import { readFileSync } from 'fs';
 
@@ -28,17 +27,11 @@ export default {
     svgr(),
     resolve(),
     commonjs(),
-    postcss({
-      extensions: ['.css'],
-      minimize: true,
-      inject: false,
-      extract: 'index.css',
-    }),
     typescript({
       tsconfig: './tsconfig.json',
       declaration: true,
       declarationDir: 'dist',
-      exclude: ['**/*.test.ts', '**/*.test.tsx'],
+      exclude: ['**/*.test.ts', '**/*.test.tsx', '**/*.css'],
     }),
   ],
 };

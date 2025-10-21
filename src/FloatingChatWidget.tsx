@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect, FormEvent } from "react";
 // @ts-ignore
-import "./styles.css";
-// @ts-ignore
 import SendIcon from "./send-icon.svg";
+// Note: CSS is built separately and should be imported by the consuming application
 
 export interface Message {
   sender: "user" | "bot";

@@ -19,7 +19,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build:css": "postcss src/styles.css -o dist/index.css --config postcss.config.cjs",
+    "build:js": "rollup -c",
+    "build": "npm run build:css && npm run build:js",
     "dev": "rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepublishOnly": "npm run build"
@@ -58,6 +60,7 @@
     "@types/react-dom": "^18.2.18",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.4.32",
+    "postcss-cli": "^11.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rollup": "^4.9.1",
