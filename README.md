@@ -22,19 +22,42 @@ A lightweight, customizable React chat widget component for n8n AI agents. Featu
 
 ## 📦 Installation
 
-```bash
-npm install n8n-ai-chat-widget
-```
+This package is published to GitHub Packages as a private package.
 
-or
+### Prerequisites
 
-```bash
-yarn add n8n-ai-chat-widget
-```
+1. **Create a GitHub Personal Access Token** with `read:packages` permission:
+   - Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+   - Click "Generate new token (classic)"
+   - Select the `read:packages` scope
+   - Generate and copy the token
+
+2. **Configure npm to use GitHub Packages:**
+
+   Create or edit `~/.npmrc` in your home directory:
+   ```
+   @brightidea:registry=https://npm.pkg.github.com
+   //npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+   ```
+
+3. **Install the package:**
+
+   ```bash
+   npm install @brightidea/n8n-ai-chat-widget
+   ```
+
+   or
+
+   ```bash
+   yarn add @brightidea/n8n-ai-chat-widget
+   ```
 
 **Requirements:**
 
 - React 16.8+
+- Access to the private GitHub repository
+
+> **Note:** For detailed publishing instructions, see [PUBLISHING.md](./PUBLISHING.md)
 
 ---
 
@@ -43,8 +66,8 @@ yarn add n8n-ai-chat-widget
 ### Basic Usage
 
 ```tsx
-import { FloatingChatWidget } from "n8n-ai-chat-widget";
-import "n8n-ai-chat-widget/dist/index.css";
+import { FloatingChatWidget } from "@brightidea/n8n-ai-chat-widget";
+import "@brightidea/n8n-ai-chat-widget/dist/index.css";
 
 function App() {
   return (
@@ -63,8 +86,8 @@ function App() {
 ### With Custom Styling
 
 ```tsx
-import { FloatingChatWidget } from "n8n-ai-chat-widget";
-import "n8n-ai-chat-widget/dist/index.css";
+import { FloatingChatWidget } from "@brightidea/n8n-ai-chat-widget";
+import "@brightidea/n8n-ai-chat-widget/dist/index.css";
 
 function App() {
   return (
@@ -89,8 +112,8 @@ function App() {
 ### With SSE Streaming (Real-time Responses)
 
 ```tsx
-import { FloatingChatWidget } from "n8n-ai-chat-widget";
-import "n8n-ai-chat-widget/dist/index.css";
+import { FloatingChatWidget } from "@brightidea/n8n-ai-chat-widget";
+import "@brightidea/n8n-ai-chat-widget/dist/index.css";
 
 function App() {
   return (
@@ -107,8 +130,8 @@ function App() {
 ### With Custom Message Handling
 
 ```tsx
-import { FloatingChatWidget } from "n8n-ai-chat-widget";
-import "n8n-ai-chat-widget/dist/index.css";
+import { FloatingChatWidget } from "@brightidea/n8n-ai-chat-widget";
+import "@brightidea/n8n-ai-chat-widget/dist/index.css";
 
 function App() {
   const handleUserRequest = (text: string) => {
@@ -366,7 +389,7 @@ You can test the package locally using `npm link`:
 npm link
 
 # In your test project
-npm link n8n-ai-chat-widget
+npm link @brightidea/n8n-ai-chat-widget
 ```
 
 ---
@@ -380,7 +403,7 @@ import {
   FloatingChatWidget,
   FloatingChatWidgetProps,
   Message,
-} from "n8n-ai-chat-widget";
+} from "@brightidea/n8n-ai-chat-widget";
 ```
 
 ---
@@ -399,7 +422,7 @@ MIT
 
 ## 🐛 Issues & Support
 
-If you encounter any issues or have questions, please [open an issue](https://github.com/yourusername/n8n-ai-chat-widget/issues) on GitHub.
+If you encounter any issues or have questions, please [open an issue](https://github.com/brightidea/n8n-ai-chat-widget/issues) on GitHub.
 
 ---
 
