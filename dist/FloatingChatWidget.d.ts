@@ -23,6 +23,9 @@ export interface FloatingChatWidgetProps {
     sessionId?: string;
     onUserRequest?: (text: string) => void;
     streaming?: boolean;
+    nagDelay?: number;
+    nagMessage?: string;
+    suggestedPrompts?: string[];
 }
 /**
  * FloatingChatWidget - A lightweight, customizable React chat widget component.

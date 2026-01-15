@@ -14,6 +14,15 @@ function Demo() {
       debug={true}
       bubbleIcon="🤖"
       streaming={true} // Enable SSE streaming responses
+      nagDelay={5000} // Show nag after 5 seconds
+      nagMessage="Need help?" // Optional tooltip message
+      suggestedPrompts={[
+        "Help Tracking a Shipment",
+        "Joining the Carrier Network",
+        "Learning More About RPM's Vehicle Services",
+        "Quality & Claims",
+        "Billing & Finance",
+      ]}
     />
   );
 }

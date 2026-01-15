@@ -69,6 +69,7 @@ var SvgSendIcon = function SvgSendIcon(props) {
   })));
 };
 
+const NAG_STORAGE_KEY = "fcw-nag-dismissed";
 const DEFAULT_CONFIG = {
     apiUrl: "{{your_n8n_api}}",
     position: "bottom-right",
@@ -86,6 +87,9 @@ const DEFAULT_CONFIG = {
     debug: false,
     sessionId: "",
     streaming: false,
+    nagDelay: undefined,
+    nagMessage: undefined,
+    suggestedPrompts: undefined,
 };
 /**
  * FloatingChatWidget - A lightweight, customizable React chat widget component.
@@ -108,8 +112,11 @@ const FloatingChatWidget = (props) => {
     const [messages, setMessages] = React.useState([]);
     const [inputValue, setInputValue] = React.useState("");
     const [isLoading, setIsLoading] = React.useState(false);
+    const [isNagging, setIsNagging] = React.useState(false);
+    const [showPrompts, setShowPrompts] = React.useState(true); // Hide after user sends first message
     const messagesEndRef = React.useRef(null);
     const inputRef = React.useRef(null);
+    const nagTimerRef = React.useRef(null);
     const log = (...args) => {
         if (config.debug) {
             console.log("[FloatingChatWidget]", ...args);
@@ -131,6 +138,36 @@ const FloatingChatWidget = (props) => {
             setTimeout(() => { var _a; return (_a = inputRef.current) === null || _a === void 0 ? void 0 : _a.focus(); }, 350);
         }
     }, [isOpen]);
+    // Nag timer - shows attention animation after delay
+    React.useEffect(() => {
+        // Skip if nag is disabled, widget is already open, or already dismissed this session
+        if (!config.nagDelay || isOpen) {
+            setIsNagging(false);
+            return;
+        }
+        // Check if user already dismissed the nag this session
+        try {
+            if (sessionStorage.getItem(NAG_STORAGE_KEY) === "true") {
+                log("Nag already dismissed this session");
+                return;
+            }
+        }
+        catch (e) {
+            // sessionStorage might be unavailable (e.g., private browsing)
+            log("sessionStorage unavailable:", e);
+        }
+        log("Starting nag timer:", config.nagDelay, "ms");
+        nagTimerRef.current = window.setTimeout(() => {
+            log("Nag triggered");
+            setIsNagging(true);
+        }, config.nagDelay);
+        return () => {
+            if (nagTimerRef.current) {
+                clearTimeout(nagTimerRef.current);
+                nagTimerRef.current = null;
+            }
+        };
+    }, [config.nagDelay, isOpen]);
     const scrollToBottom = () => {
         var _a;
         (_a = messagesEndRef.current) === null || _a === void 0 ? void 0 : _a.scrollIntoView({ behavior: "smooth" });
@@ -282,8 +319,13 @@ const FloatingChatWidget = (props) => {
         const text = inputValue.trim();
         if (!text)
             return;
+        sendMessage(text);
+    };
+    // Send a message (from input or prompt button)
+    const sendMessage = (text) => {
         addMessage("user", text);
         setInputValue("");
+        setShowPrompts(false); // Hide prompts after first user message
         if (props.onUserRequest) {
             props.onUserRequest(text);
         }
@@ -297,9 +339,28 @@ const FloatingChatWidget = (props) => {
             }
         }
     };
+    // Handle clicking a suggested prompt
+    const handlePromptClick = (prompt) => {
+        sendMessage(prompt);
+    };
     const toggleWidget = () => {
+        const wasOpen = isOpen;
         setIsOpen((prev) => !prev);
         log("Widget toggled:", !isOpen);
+        // Stop nagging when user interacts with the widget
+        if (isNagging) {
+            setIsNagging(false);
+        }
+        // If user is closing the widget, mark nag as dismissed for this session
+        if (wasOpen && config.nagDelay) {
+            try {
+                sessionStorage.setItem(NAG_STORAGE_KEY, "true");
+                log("Nag dismissed for session");
+            }
+            catch (e) {
+                log("Could not save nag dismissal:", e);
+            }
+        }
     };
     const positionClass = config.position === "bottom-left" ? "left-6" : "right-6";
     // Helper to check if string is an image URL
@@ -333,12 +394,13 @@ const FloatingChatWidget = (props) => {
         return React.createElement("span", { className: "fcw-title-icon-emoji" }, config.titleIcon);
     };
     return (React.createElement(React.Fragment, null,
-        React.createElement("button", { onClick: toggleWidget, className: `fcw-chat-bubble ${positionClass}`, style: {
-                zIndex: config.zIndex,
-                backgroundColor: config.cleanTheme
-                    ? "transparent"
-                    : config.themeColor,
-            }, "aria-label": "Toggle chat" }, renderBubbleIcon()),
+        React.createElement("div", { className: `fcw-bubble-container ${positionClass}`, style: { zIndex: config.zIndex } },
+            isNagging && config.nagMessage && (React.createElement("div", { className: `fcw-nag-tooltip ${config.position === "bottom-left" ? "fcw-nag-tooltip-left" : "fcw-nag-tooltip-right"}`, onClick: toggleWidget }, config.nagMessage)),
+            React.createElement("button", { onClick: toggleWidget, className: `fcw-chat-bubble-btn ${isNagging ? "fcw-nagging" : ""}`, style: {
+                    backgroundColor: config.cleanTheme
+                        ? "transparent"
+                        : config.themeColor,
+                }, "aria-label": "Toggle chat" }, renderBubbleIcon())),
         React.createElement("div", { className: `fcw-chat-widget ${positionClass} ${isOpen ? "fcw-open" : "fcw-closed"}`, style: {
                 zIndex: config.zIndex,
                 width: config.width,
@@ -364,6 +426,7 @@ const FloatingChatWidget = (props) => {
                                     ? '<span class="fcw-cursor">|</span>'
                                     : ""),
                         } })))),
+                showPrompts && config.suggestedPrompts && config.suggestedPrompts.length > 0 && (React.createElement("div", { className: "fcw-suggested-prompts" }, config.suggestedPrompts.map((prompt, index) => (React.createElement("button", { key: index, className: "fcw-prompt-btn", onClick: () => handlePromptClick(prompt), type: "button" }, prompt))))),
                 isLoading && (React.createElement("div", { className: "fcw-message fcw-message-bot" },
                     React.createElement("div", { className: "fcw-message-bubble fcw-message-bubble-bot" },
                         React.createElement("span", { className: "fcw-loading" }, "\u25CF\u25CF\u25CF")))),

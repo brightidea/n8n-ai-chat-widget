@@ -28,14 +28,17 @@ export interface FloatingChatWidgetProps {
   sessionId?: string;
   onUserRequest?: (text: string) => void;
   streaming?: boolean; // Enable SSE streaming responses
+  nagDelay?: number; // Milliseconds before showing nag animation (e.g., 5000 = 5 seconds). Disabled if not set.
+  nagMessage?: string; // Optional tooltip message to show during nag (e.g., "Need help?")
+  suggestedPrompts?: string[]; // Array of clickable prompt suggestions shown after welcome message
 }
 
+const NAG_STORAGE_KEY = "fcw-nag-dismissed";
+
 const DEFAULT_CONFIG: Required<
-  Omit<FloatingChatWidgetProps, "apiUrl" | "onUserRequest" | "titleIcon">
-> & {
-  apiUrl: string;
-  titleIcon?: string;
-} = {
+  Omit<FloatingChatWidgetProps, "apiUrl" | "onUserRequest" | "titleIcon" | "nagDelay" | "nagMessage" | "suggestedPrompts">
+> &
+  Pick<FloatingChatWidgetProps, "apiUrl" | "titleIcon" | "nagDelay" | "nagMessage" | "suggestedPrompts"> = {
   apiUrl: "{{your_n8n_api}}",
   position: "bottom-right",
   cleanTheme: false,
@@ -52,6 +55,9 @@ const DEFAULT_CONFIG: Required<
   debug: false,
   sessionId: "",
   streaming: false,
+  nagDelay: undefined,
+  nagMessage: undefined,
+  suggestedPrompts: undefined,
 };
 
 /**
@@ -82,8 +88,11 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isNagging, setIsNagging] = useState(false);
+  const [showPrompts, setShowPrompts] = useState(true); // Hide after user sends first message
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const nagTimerRef = useRef<number | null>(null);
 
   const log = (...args: any[]) => {
     if (config.debug) {
@@ -109,6 +118,39 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
       setTimeout(() => inputRef.current?.focus(), 350);
     }
   }, [isOpen]);
+
+  // Nag timer - shows attention animation after delay
+  useEffect(() => {
+    // Skip if nag is disabled, widget is already open, or already dismissed this session
+    if (!config.nagDelay || isOpen) {
+      setIsNagging(false);
+      return;
+    }
+
+    // Check if user already dismissed the nag this session
+    try {
+      if (sessionStorage.getItem(NAG_STORAGE_KEY) === "true") {
+        log("Nag already dismissed this session");
+        return;
+      }
+    } catch (e) {
+      // sessionStorage might be unavailable (e.g., private browsing)
+      log("sessionStorage unavailable:", e);
+    }
+
+    log("Starting nag timer:", config.nagDelay, "ms");
+    nagTimerRef.current = window.setTimeout(() => {
+      log("Nag triggered");
+      setIsNagging(true);
+    }, config.nagDelay);
+
+    return () => {
+      if (nagTimerRef.current) {
+        clearTimeout(nagTimerRef.current);
+        nagTimerRef.current = null;
+      }
+    };
+  }, [config.nagDelay, isOpen]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -284,8 +326,14 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
     const text = inputValue.trim();
     if (!text) return;
 
+    sendMessage(text);
+  };
+
+  // Send a message (from input or prompt button)
+  const sendMessage = (text: string) => {
     addMessage("user", text);
     setInputValue("");
+    setShowPrompts(false); // Hide prompts after first user message
 
     if (props.onUserRequest) {
       props.onUserRequest(text);
@@ -299,9 +347,30 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
     }
   };
 
+  // Handle clicking a suggested prompt
+  const handlePromptClick = (prompt: string) => {
+    sendMessage(prompt);
+  };
+
   const toggleWidget = () => {
+    const wasOpen = isOpen;
     setIsOpen((prev) => !prev);
     log("Widget toggled:", !isOpen);
+
+    // Stop nagging when user interacts with the widget
+    if (isNagging) {
+      setIsNagging(false);
+    }
+
+    // If user is closing the widget, mark nag as dismissed for this session
+    if (wasOpen && config.nagDelay) {
+      try {
+        sessionStorage.setItem(NAG_STORAGE_KEY, "true");
+        log("Nag dismissed for session");
+      } catch (e) {
+        log("Could not save nag dismissal:", e);
+      }
+    }
   };
 
   const positionClass =
@@ -361,19 +430,29 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
   return (
     <>
       {/* Bubble button */}
-      <button
-        onClick={toggleWidget}
-        className={`fcw-chat-bubble ${positionClass}`}
-        style={{
-          zIndex: config.zIndex,
-          backgroundColor: config.cleanTheme
-            ? "transparent"
-            : config.themeColor,
-        }}
-        aria-label="Toggle chat"
-      >
-        {renderBubbleIcon()}
-      </button>
+      <div className={`fcw-bubble-container ${positionClass}`} style={{ zIndex: config.zIndex }}>
+        {/* Nag tooltip message */}
+        {isNagging && config.nagMessage && (
+          <div
+            className={`fcw-nag-tooltip ${config.position === "bottom-left" ? "fcw-nag-tooltip-left" : "fcw-nag-tooltip-right"}`}
+            onClick={toggleWidget}
+          >
+            {config.nagMessage}
+          </div>
+        )}
+        <button
+          onClick={toggleWidget}
+          className={`fcw-chat-bubble-btn ${isNagging ? "fcw-nagging" : ""}`}
+          style={{
+            backgroundColor: config.cleanTheme
+              ? "transparent"
+              : config.themeColor,
+          }}
+          aria-label="Toggle chat"
+        >
+          {renderBubbleIcon()}
+        </button>
+      </div>
 
       {/* Chat widget */}
       <div
@@ -448,6 +527,22 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
               />
             </div>
           ))}
+
+          {/* Suggested prompts */}
+          {showPrompts && config.suggestedPrompts && config.suggestedPrompts.length > 0 && (
+            <div className="fcw-suggested-prompts">
+              {config.suggestedPrompts.map((prompt, index) => (
+                <button
+                  key={index}
+                  className="fcw-prompt-btn"
+                  onClick={() => handlePromptClick(prompt)}
+                  type="button"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Loading indicator */}
           {isLoading && (

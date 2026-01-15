@@ -1,12 +1,25 @@
 @import "tailwindcss";
 
 /* Custom styles for the FloatingChatWidget */
-.fcw-chat-bubble {
+
+/* Bubble container - holds button and tooltip */
+.fcw-bubble-container {
   position: fixed;
   bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fcw-bubble-container.left-6 {
+  flex-direction: row-reverse;
+}
+
+.fcw-chat-bubble-btn {
   width: 5rem;
   height: 5rem;
   border-radius: 9999px;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,13 +30,87 @@
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
   color: white;
+  flex-shrink: 0;
 }
 
-.fcw-chat-bubble:hover {
+.fcw-chat-bubble-btn:hover {
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
     0 8px 10px -6px rgb(0 0 0 / 0.1);
   transform: scale(1.05);
   filter: brightness(1.1);
+}
+
+/* Nag animation - gentle bounce to grab attention */
+.fcw-chat-bubble-btn.fcw-nagging {
+  animation: fcw-nag-bounce 1s ease-in-out infinite;
+}
+
+@keyframes fcw-nag-bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-8px) scale(1.05);
+  }
+  50% {
+    transform: translateY(0) scale(1);
+  }
+  75% {
+    transform: translateY(-4px) scale(1.02);
+  }
+}
+
+/* Nag tooltip message */
+.fcw-nag-tooltip {
+  background-color: #1f2937;
+  color: white;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  animation: fcw-tooltip-fade-in 0.3s ease-out;
+  position: relative;
+}
+
+.fcw-nag-tooltip:hover {
+  background-color: #374151;
+}
+
+/* Tooltip arrow pointing to bubble */
+.fcw-nag-tooltip-right::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent transparent #1f2937;
+}
+
+.fcw-nag-tooltip-left::after {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent #1f2937 transparent transparent;
+}
+
+@keyframes fcw-tooltip-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .fcw-bubble-icon-img {
@@ -324,4 +411,37 @@
 
 .leading-none {
   line-height: 1;
+}
+
+/* Suggested prompts */
+.fcw-suggested-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  margin-top: 0.25rem;
+}
+
+.fcw-prompt-btn {
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  color: #374151;
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.fcw-prompt-btn:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.fcw-prompt-btn:active {
+  transform: translateY(0);
+  background-color: #e5e7eb;
 }
