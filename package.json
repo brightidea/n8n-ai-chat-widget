@@ -1,6 +1,6 @@
 {
   "name": "@brightidea/n8n-ai-chat-widget",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A lightweight, customizable React chat widget component for n8n AI agents",
   "type": "module",
   "main": "dist/index.js",
@@ -41,7 +41,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/brightidea/n8n-ai-chat-widget.git"
+    "url": "git+https://github.com/brightidea/n8n-ai-chat-widget.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
