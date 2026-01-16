@@ -29,19 +29,9 @@ jobs:
           scope: "@brightidea"
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Debug - Show package.json build script
-        run: cat package.json | grep -A 3 '"build"'
-
-      - name: Debug - Check if rollup-plugin-postcss is installed
-        run: npm list rollup-plugin-postcss || echo "rollup-plugin-postcss not found (good)"
-
-      - name: Debug - List all postcss config files
-        run: ls -la postcss.* .postcssrc* 2>/dev/null || echo "No postcss config files found"
-
-      - name: Remove auto-generated postcss.config.js if it exists
-        run: rm -f postcss.config.js postcss.config.mjs
+        run: |
+          rm -f package-lock.json
+          npm install
 
       - name: Build package
         run: npm run build
