@@ -169,6 +169,17 @@ const FloatingChatWidget = (props) => {
             .replace(/\n/g, "<br>")
             .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
             .replace(/\*(.+?)\*/g, "<i>$1</i>")
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, linkText, url) => {
+            // Check if internal link (rpmmoves.com or already relative)
+            const isInternal = url.startsWith('/') || url.includes('rpmmoves.com');
+            if (isInternal) {
+                // Convert to relative path for internal links
+                const relativePath = url.replace(/^https?:\/\/(www\.)?rpmmoves\.com/, '');
+                return `<a href="${relativePath}">${linkText}</a>`;
+            }
+            // External links open in new tab
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+        })
             .replace(/\- (.+)/g, "<li>$1</li>");
         // Wrap list items in ul
         if (/<li>/.test(html)) {

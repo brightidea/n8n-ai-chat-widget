@@ -180,6 +180,9 @@
   }
 }
 @layer utilities {
+  .relative {
+    position: relative;
+  }
   .static {
     position: static;
   }
@@ -471,6 +474,14 @@
 }
 .fcw-message-bubble li {
   margin: 0.25rem 0;
+}
+.fcw-message-bubble a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.fcw-message-bubble a:hover {
+  opacity: 0.8;
 }
 .fcw-chat-input-form {
   display: flex;
