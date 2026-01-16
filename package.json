@@ -1,6 +1,6 @@
 {
   "name": "@brightidea/n8n-ai-chat-widget",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A lightweight, customizable React chat widget component for n8n AI agents",
   "type": "module",
   "main": "dist/index.js",
