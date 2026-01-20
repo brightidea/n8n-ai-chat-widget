@@ -247,8 +247,9 @@
   flex-direction: row-reverse;
 }
 .fcw-chat-bubble-btn {
-  width: 5rem;
-  height: 5rem;
+  width: 3rem;
+  height: 3rem;
+  background-color: #ffffff !important;
   border-radius: 9999px;
   border: none;
   display: flex;
@@ -262,6 +263,7 @@
   transition-duration: 200ms;
   color: white;
   flex-shrink: 0;
+  z-index: 9999;
 }
 .fcw-chat-bubble-btn:hover {
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
@@ -273,7 +275,8 @@
   animation: fcw-nag-bounce 1s ease-in-out infinite;
 }
 @keyframes fcw-nag-bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) scale(1);
   }
   25% {

@@ -107,6 +107,7 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
   const nagTimerRef = useRef<number | null>(null);
   const autoCloseTimerRef = useRef<number | null>(null);
   const hasUserInteractedRef = useRef(false);
+  const isAutoOpenActiveRef = useRef(false);
 
   const log = (...args: any[]) => {
     if (config.debug) {
@@ -173,12 +174,14 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
     nagTimerRef.current = window.setTimeout(() => {
       log("Auto-opening widget");
       hasUserInteractedRef.current = false;
+      isAutoOpenActiveRef.current = true;
       setIsOpen(true);
 
       // Start 10-second auto-close timer
       autoCloseTimerRef.current = window.setTimeout(() => {
         if (!hasUserInteractedRef.current) {
           log("No interaction detected, auto-closing and showing nag");
+          isAutoOpenActiveRef.current = false;
           setIsOpen(false);
           setIsNagging(true);
           // Mark auto-open as completed
@@ -196,7 +199,9 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
         clearTimeout(nagTimerRef.current);
         nagTimerRef.current = null;
       }
-      if (autoCloseTimerRef.current) {
+      // Only clear auto-close timer if we're not in active auto-open mode
+      // (prevents cleanup from canceling the timer when widget opens)
+      if (autoCloseTimerRef.current && !isAutoOpenActiveRef.current) {
         clearTimeout(autoCloseTimerRef.current);
         autoCloseTimerRef.current = null;
       }
@@ -212,6 +217,7 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
     if (!hasUserInteractedRef.current && autoCloseTimerRef.current) {
       log("User interaction detected, canceling auto-close");
       hasUserInteractedRef.current = true;
+      isAutoOpenActiveRef.current = false;
       clearTimeout(autoCloseTimerRef.current);
       autoCloseTimerRef.current = null;
       // Mark auto-open as completed since user engaged
