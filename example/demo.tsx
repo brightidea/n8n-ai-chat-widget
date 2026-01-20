@@ -1,5 +1,6 @@
-import ReactDOM from 'react-dom/client';
-import { FloatingChatWidget } from '../src/FloatingChatWidget';
+import ReactDOM from "react-dom/client";
+import { FloatingChatWidget } from "../src/FloatingChatWidget";
+import "../dist/index.css";
 
 function Demo() {
   return (
@@ -27,5 +28,5 @@ function Demo() {
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root')!);
+const root = ReactDOM.createRoot(document.getElementById("root")!);
 root.render(<Demo />);

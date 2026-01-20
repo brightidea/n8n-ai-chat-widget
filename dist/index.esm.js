@@ -48,6 +48,7 @@ var SvgSendIcon = function SvgSendIcon(props) {
 };
 
 const NAG_STORAGE_KEY = "fcw-nag-dismissed";
+const AUTO_OPEN_STORAGE_KEY = "fcw-auto-open-completed";
 const DEFAULT_CONFIG = {
     apiUrl: "{{your_n8n_api}}",
     position: "bottom-right",
@@ -95,6 +96,8 @@ const FloatingChatWidget = (props) => {
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const nagTimerRef = useRef(null);
+    const autoCloseTimerRef = useRef(null);
+    const hasUserInteractedRef = useRef(false);
     const log = (...args) => {
         if (config.debug) {
             console.log("[FloatingChatWidget]", ...args);
@@ -116,39 +119,84 @@ const FloatingChatWidget = (props) => {
             setTimeout(() => { var _a; return (_a = inputRef.current) === null || _a === void 0 ? void 0 : _a.focus(); }, 350);
         }
     }, [isOpen]);
-    // Nag timer - shows attention animation after delay
+    // Auto-open timer - opens widget after delay, then auto-closes if no interaction
     useEffect(() => {
-        // Skip if nag is disabled, widget is already open, or already dismissed this session
+        // Skip if nag is disabled or widget is already open
         if (!config.nagDelay || isOpen) {
             setIsNagging(false);
             return;
         }
-        // Check if user already dismissed the nag this session
+        // Check if auto-open already completed this session
         try {
-            if (sessionStorage.getItem(NAG_STORAGE_KEY) === "true") {
-                log("Nag already dismissed this session");
-                return;
+            if (sessionStorage.getItem(AUTO_OPEN_STORAGE_KEY) === "true") {
+                log("Auto-open already completed this session, showing nag instead");
+                // Fall back to regular nag behavior
+                nagTimerRef.current = window.setTimeout(() => {
+                    log("Nag triggered");
+                    setIsNagging(true);
+                }, config.nagDelay);
+                return () => {
+                    if (nagTimerRef.current) {
+                        clearTimeout(nagTimerRef.current);
+                        nagTimerRef.current = null;
+                    }
+                };
             }
         }
         catch (e) {
-            // sessionStorage might be unavailable (e.g., private browsing)
             log("sessionStorage unavailable:", e);
         }
-        log("Starting nag timer:", config.nagDelay, "ms");
+        log("Starting auto-open timer:", config.nagDelay, "ms");
         nagTimerRef.current = window.setTimeout(() => {
-            log("Nag triggered");
-            setIsNagging(true);
+            log("Auto-opening widget");
+            hasUserInteractedRef.current = false;
+            setIsOpen(true);
+            // Start 10-second auto-close timer
+            autoCloseTimerRef.current = window.setTimeout(() => {
+                if (!hasUserInteractedRef.current) {
+                    log("No interaction detected, auto-closing and showing nag");
+                    setIsOpen(false);
+                    setIsNagging(true);
+                    // Mark auto-open as completed
+                    try {
+                        sessionStorage.setItem(AUTO_OPEN_STORAGE_KEY, "true");
+                    }
+                    catch (e) {
+                        log("Could not save auto-open state:", e);
+                    }
+                }
+            }, 10000);
         }, config.nagDelay);
         return () => {
             if (nagTimerRef.current) {
                 clearTimeout(nagTimerRef.current);
                 nagTimerRef.current = null;
             }
+            if (autoCloseTimerRef.current) {
+                clearTimeout(autoCloseTimerRef.current);
+                autoCloseTimerRef.current = null;
+            }
         };
     }, [config.nagDelay, isOpen]);
     const scrollToBottom = () => {
         var _a;
         (_a = messagesEndRef.current) === null || _a === void 0 ? void 0 : _a.scrollIntoView({ behavior: "smooth" });
+    };
+    // Mark that user has interacted, canceling auto-close timer
+    const markUserInteraction = () => {
+        if (!hasUserInteractedRef.current && autoCloseTimerRef.current) {
+            log("User interaction detected, canceling auto-close");
+            hasUserInteractedRef.current = true;
+            clearTimeout(autoCloseTimerRef.current);
+            autoCloseTimerRef.current = null;
+            // Mark auto-open as completed since user engaged
+            try {
+                sessionStorage.setItem(AUTO_OPEN_STORAGE_KEY, "true");
+            }
+            catch (e) {
+                log("Could not save auto-open state:", e);
+            }
+        }
     };
     const addMessage = (sender, text, id, isStreaming) => {
         const newMessage = {
@@ -312,6 +360,7 @@ const FloatingChatWidget = (props) => {
     };
     // Send a message (from input or prompt button)
     const sendMessage = (text) => {
+        markUserInteraction();
         addMessage("user", text);
         setInputValue("");
         setShowPrompts(false); // Hide prompts after first user message
@@ -336,18 +385,24 @@ const FloatingChatWidget = (props) => {
         const wasOpen = isOpen;
         setIsOpen((prev) => !prev);
         log("Widget toggled:", !isOpen);
+        // Clear auto-close timer if user manually interacts
+        if (autoCloseTimerRef.current) {
+            clearTimeout(autoCloseTimerRef.current);
+            autoCloseTimerRef.current = null;
+        }
         // Stop nagging when user interacts with the widget
         if (isNagging) {
             setIsNagging(false);
         }
-        // If user is closing the widget, mark nag as dismissed for this session
+        // If user is closing the widget, mark as dismissed for this session
         if (wasOpen && config.nagDelay) {
             try {
                 sessionStorage.setItem(NAG_STORAGE_KEY, "true");
-                log("Nag dismissed for session");
+                sessionStorage.setItem(AUTO_OPEN_STORAGE_KEY, "true");
+                log("Widget closed, auto-open and nag dismissed for session");
             }
             catch (e) {
-                log("Could not save nag dismissal:", e);
+                log("Could not save dismissal state:", e);
             }
         }
     };
@@ -421,7 +476,10 @@ const FloatingChatWidget = (props) => {
                         React__default.createElement("span", { className: "fcw-loading" }, "\u25CF\u25CF\u25CF")))),
                 React__default.createElement("div", { ref: messagesEndRef })),
             React__default.createElement("form", { onSubmit: handleSubmit, className: "fcw-chat-input-form" },
-                React__default.createElement("input", { ref: inputRef, type: "text", placeholder: config.placeholder, value: inputValue, onChange: (e) => setInputValue(e.target.value), className: "fcw-chat-input", style: { fontFamily: config.fontFamily } }),
+                React__default.createElement("input", { ref: inputRef, type: "text", placeholder: config.placeholder, value: inputValue, onChange: (e) => {
+                        setInputValue(e.target.value);
+                        markUserInteraction();
+                    }, className: "fcw-chat-input", style: { fontFamily: config.fontFamily } }),
                 React__default.createElement("button", { type: "submit", disabled: isLoading || !inputValue.trim(), className: "fcw-chat-send-btn", "aria-label": "Send message" },
                     React__default.createElement(SvgSendIcon, { className: "fcw-send-icon" }))))));
 };

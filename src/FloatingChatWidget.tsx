@@ -34,11 +34,23 @@ export interface FloatingChatWidgetProps {
 }
 
 const NAG_STORAGE_KEY = "fcw-nag-dismissed";
+const AUTO_OPEN_STORAGE_KEY = "fcw-auto-open-completed";
 
 const DEFAULT_CONFIG: Required<
-  Omit<FloatingChatWidgetProps, "apiUrl" | "onUserRequest" | "titleIcon" | "nagDelay" | "nagMessage" | "suggestedPrompts">
+  Omit<
+    FloatingChatWidgetProps,
+    | "apiUrl"
+    | "onUserRequest"
+    | "titleIcon"
+    | "nagDelay"
+    | "nagMessage"
+    | "suggestedPrompts"
+  >
 > &
-  Pick<FloatingChatWidgetProps, "apiUrl" | "titleIcon" | "nagDelay" | "nagMessage" | "suggestedPrompts"> = {
+  Pick<
+    FloatingChatWidgetProps,
+    "apiUrl" | "titleIcon" | "nagDelay" | "nagMessage" | "suggestedPrompts"
+  > = {
   apiUrl: "{{your_n8n_api}}",
   position: "bottom-right",
   cleanTheme: false,
@@ -93,6 +105,8 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const nagTimerRef = useRef<number | null>(null);
+  const autoCloseTimerRef = useRef<number | null>(null);
+  const hasUserInteractedRef = useRef(false);
 
   const log = (...args: any[]) => {
     if (config.debug) {
@@ -119,29 +133,54 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
     }
   }, [isOpen]);
 
-  // Nag timer - shows attention animation after delay
+  // Auto-open timer - opens widget after delay, then auto-closes if no interaction
   useEffect(() => {
-    // Skip if nag is disabled, widget is already open, or already dismissed this session
+    // Skip if nag is disabled or widget is already open
     if (!config.nagDelay || isOpen) {
       setIsNagging(false);
       return;
     }
 
-    // Check if user already dismissed the nag this session
+    // Check if auto-open already completed this session
     try {
-      if (sessionStorage.getItem(NAG_STORAGE_KEY) === "true") {
-        log("Nag already dismissed this session");
-        return;
+      if (sessionStorage.getItem(AUTO_OPEN_STORAGE_KEY) === "true") {
+        log("Auto-open already completed this session, showing nag instead");
+        // Fall back to regular nag behavior
+        nagTimerRef.current = window.setTimeout(() => {
+          log("Nag triggered");
+          setIsNagging(true);
+        }, config.nagDelay);
+        return () => {
+          if (nagTimerRef.current) {
+            clearTimeout(nagTimerRef.current);
+            nagTimerRef.current = null;
+          }
+        };
       }
     } catch (e) {
-      // sessionStorage might be unavailable (e.g., private browsing)
       log("sessionStorage unavailable:", e);
     }
 
-    log("Starting nag timer:", config.nagDelay, "ms");
+    log("Starting auto-open timer:", config.nagDelay, "ms");
     nagTimerRef.current = window.setTimeout(() => {
-      log("Nag triggered");
-      setIsNagging(true);
+      log("Auto-opening widget");
+      hasUserInteractedRef.current = false;
+      setIsOpen(true);
+
+      // Start 10-second auto-close timer
+      autoCloseTimerRef.current = window.setTimeout(() => {
+        if (!hasUserInteractedRef.current) {
+          log("No interaction detected, auto-closing and showing nag");
+          setIsOpen(false);
+          setIsNagging(true);
+          // Mark auto-open as completed
+          try {
+            sessionStorage.setItem(AUTO_OPEN_STORAGE_KEY, "true");
+          } catch (e) {
+            log("Could not save auto-open state:", e);
+          }
+        }
+      }, 10000);
     }, config.nagDelay);
 
     return () => {
@@ -149,11 +188,31 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
         clearTimeout(nagTimerRef.current);
         nagTimerRef.current = null;
       }
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+        autoCloseTimerRef.current = null;
+      }
     };
   }, [config.nagDelay, isOpen]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Mark that user has interacted, canceling auto-close timer
+  const markUserInteraction = () => {
+    if (!hasUserInteractedRef.current && autoCloseTimerRef.current) {
+      log("User interaction detected, canceling auto-close");
+      hasUserInteractedRef.current = true;
+      clearTimeout(autoCloseTimerRef.current);
+      autoCloseTimerRef.current = null;
+      // Mark auto-open as completed since user engaged
+      try {
+        sessionStorage.setItem(AUTO_OPEN_STORAGE_KEY, "true");
+      } catch (e) {
+        log("Could not save auto-open state:", e);
+      }
+    }
   };
 
   const addMessage = (
@@ -186,11 +245,14 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
       .replace(/\*(.+?)\*/g, "<i>$1</i>")
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, linkText, url) => {
         // Check if internal link (rpmmoves.com or already relative)
-        const isInternal = url.startsWith('/') || url.includes('rpmmoves.com');
+        const isInternal = url.startsWith("/") || url.includes("rpmmoves.com");
 
         if (isInternal) {
           // Convert to relative path for internal links
-          const relativePath = url.replace(/^https?:\/\/(www\.)?rpmmoves\.com/, '');
+          const relativePath = url.replace(
+            /^https?:\/\/(www\.)?rpmmoves\.com/,
+            ""
+          );
           return `<a href="${relativePath}">${linkText}</a>`;
         }
         // External links open in new tab
@@ -442,11 +504,18 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
   return (
     <>
       {/* Bubble button */}
-      <div className={`fcw-bubble-container ${positionClass}`} style={{ zIndex: config.zIndex }}>
+      <div
+        className={`fcw-bubble-container ${positionClass}`}
+        style={{ zIndex: config.zIndex }}
+      >
         {/* Nag tooltip message */}
         {isNagging && config.nagMessage && (
           <div
-            className={`fcw-nag-tooltip ${config.position === "bottom-left" ? "fcw-nag-tooltip-left" : "fcw-nag-tooltip-right"}`}
+            className={`fcw-nag-tooltip ${
+              config.position === "bottom-left"
+                ? "fcw-nag-tooltip-left"
+                : "fcw-nag-tooltip-right"
+            }`}
             onClick={toggleWidget}
           >
             {config.nagMessage}
@@ -541,20 +610,22 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
           ))}
 
           {/* Suggested prompts */}
-          {showPrompts && config.suggestedPrompts && config.suggestedPrompts.length > 0 && (
-            <div className="fcw-suggested-prompts">
-              {config.suggestedPrompts.map((prompt, index) => (
-                <button
-                  key={index}
-                  className="fcw-prompt-btn"
-                  onClick={() => handlePromptClick(prompt)}
-                  type="button"
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-          )}
+          {showPrompts &&
+            config.suggestedPrompts &&
+            config.suggestedPrompts.length > 0 && (
+              <div className="fcw-suggested-prompts">
+                {config.suggestedPrompts.map((prompt, index) => (
+                  <button
+                    key={index}
+                    className="fcw-prompt-btn"
+                    onClick={() => handlePromptClick(prompt)}
+                    type="button"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            )}
 
           {/* Loading indicator */}
           {isLoading && (
