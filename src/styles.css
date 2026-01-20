@@ -455,3 +455,28 @@
   transform: translateY(0);
   background-color: #e5e7eb;
 }
+
+/* Mobile styles - center chat widget when open */
+@media (max-width: 767px) {
+  .fcw-chat-widget.fcw-open {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) translateY(0) scale(1);
+    width: calc(100vw - 2rem);
+    max-width: 400px;
+    bottom: 1.5rem;
+  }
+
+  .fcw-chat-widget.fcw-closed {
+    transform: translateX(-50%) translateY(2rem) scale(0.98);
+  }
+
+  /* Keep bubble button in corner on mobile */
+  .fcw-bubble-container.right-6 {
+    right: 1rem;
+  }
+
+  .fcw-bubble-container.left-6 {
+    left: 1rem;
+  }
+}

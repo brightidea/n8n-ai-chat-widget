@@ -126,25 +126,31 @@ const FloatingChatWidget = (props) => {
             setIsNagging(false);
             return;
         }
-        // Check if auto-open already completed this session
-        try {
-            if (sessionStorage.getItem(AUTO_OPEN_STORAGE_KEY) === "true") {
-                log("Auto-open already completed this session, showing nag instead");
-                // Fall back to regular nag behavior
-                nagTimerRef.current = window.setTimeout(() => {
-                    log("Nag triggered");
-                    setIsNagging(true);
-                }, config.nagDelay);
-                return () => {
-                    if (nagTimerRef.current) {
-                        clearTimeout(nagTimerRef.current);
-                        nagTimerRef.current = null;
-                    }
-                };
+        // Check if mobile device (skip auto-open, just show nag)
+        const isMobile = window.innerWidth < 768;
+        // Check if auto-open already completed this session OR on mobile
+        const shouldSkipAutoOpen = isMobile || (() => {
+            try {
+                return sessionStorage.getItem(AUTO_OPEN_STORAGE_KEY) === "true";
             }
-        }
-        catch (e) {
-            log("sessionStorage unavailable:", e);
+            catch (e) {
+                log("sessionStorage unavailable:", e);
+                return false;
+            }
+        })();
+        if (shouldSkipAutoOpen) {
+            log(isMobile ? "Mobile detected, showing nag instead of auto-open" : "Auto-open already completed this session");
+            // Fall back to regular nag behavior
+            nagTimerRef.current = window.setTimeout(() => {
+                log("Nag triggered");
+                setIsNagging(true);
+            }, config.nagDelay);
+            return () => {
+                if (nagTimerRef.current) {
+                    clearTimeout(nagTimerRef.current);
+                    nagTimerRef.current = null;
+                }
+            };
         }
         log("Starting auto-open timer:", config.nagDelay, "ms");
         nagTimerRef.current = window.setTimeout(() => {
@@ -219,10 +225,10 @@ const FloatingChatWidget = (props) => {
             .replace(/\*(.+?)\*/g, "<i>$1</i>")
             .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, linkText, url) => {
             // Check if internal link (rpmmoves.com or already relative)
-            const isInternal = url.startsWith('/') || url.includes('rpmmoves.com');
+            const isInternal = url.startsWith("/") || url.includes("rpmmoves.com");
             if (isInternal) {
                 // Convert to relative path for internal links
-                const relativePath = url.replace(/^https?:\/\/(www\.)?rpmmoves\.com/, '');
+                const relativePath = url.replace(/^https?:\/\/(www\.)?rpmmoves\.com/, "");
                 return `<a href="${relativePath}">${linkText}</a>`;
             }
             // External links open in new tab
@@ -439,7 +445,9 @@ const FloatingChatWidget = (props) => {
     };
     return (React__default.createElement(React__default.Fragment, null,
         React__default.createElement("div", { className: `fcw-bubble-container ${positionClass}`, style: { zIndex: config.zIndex } },
-            isNagging && config.nagMessage && (React__default.createElement("div", { className: `fcw-nag-tooltip ${config.position === "bottom-left" ? "fcw-nag-tooltip-left" : "fcw-nag-tooltip-right"}`, onClick: toggleWidget }, config.nagMessage)),
+            isNagging && config.nagMessage && (React__default.createElement("div", { className: `fcw-nag-tooltip ${config.position === "bottom-left"
+                    ? "fcw-nag-tooltip-left"
+                    : "fcw-nag-tooltip-right"}`, onClick: toggleWidget }, config.nagMessage)),
             React__default.createElement("button", { onClick: toggleWidget, className: `fcw-chat-bubble-btn ${isNagging ? "fcw-nagging" : ""}`, style: {
                     backgroundColor: config.cleanTheme
                         ? "transparent"
@@ -470,7 +478,9 @@ const FloatingChatWidget = (props) => {
                                     ? '<span class="fcw-cursor">|</span>'
                                     : ""),
                         } })))),
-                showPrompts && config.suggestedPrompts && config.suggestedPrompts.length > 0 && (React__default.createElement("div", { className: "fcw-suggested-prompts" }, config.suggestedPrompts.map((prompt, index) => (React__default.createElement("button", { key: index, className: "fcw-prompt-btn", onClick: () => handlePromptClick(prompt), type: "button" }, prompt))))),
+                showPrompts &&
+                    config.suggestedPrompts &&
+                    config.suggestedPrompts.length > 0 && (React__default.createElement("div", { className: "fcw-suggested-prompts" }, config.suggestedPrompts.map((prompt, index) => (React__default.createElement("button", { key: index, className: "fcw-prompt-btn", onClick: () => handlePromptClick(prompt), type: "button" }, prompt))))),
                 isLoading && (React__default.createElement("div", { className: "fcw-message fcw-message-bot" },
                     React__default.createElement("div", { className: "fcw-message-bubble fcw-message-bubble-bot" },
                         React__default.createElement("span", { className: "fcw-loading" }, "\u25CF\u25CF\u25CF")))),

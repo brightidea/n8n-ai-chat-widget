@@ -141,24 +141,32 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
       return;
     }
 
-    // Check if auto-open already completed this session
-    try {
-      if (sessionStorage.getItem(AUTO_OPEN_STORAGE_KEY) === "true") {
-        log("Auto-open already completed this session, showing nag instead");
-        // Fall back to regular nag behavior
-        nagTimerRef.current = window.setTimeout(() => {
-          log("Nag triggered");
-          setIsNagging(true);
-        }, config.nagDelay);
-        return () => {
-          if (nagTimerRef.current) {
-            clearTimeout(nagTimerRef.current);
-            nagTimerRef.current = null;
-          }
-        };
+    // Check if mobile device (skip auto-open, just show nag)
+    const isMobile = window.innerWidth < 768;
+
+    // Check if auto-open already completed this session OR on mobile
+    const shouldSkipAutoOpen = isMobile || (() => {
+      try {
+        return sessionStorage.getItem(AUTO_OPEN_STORAGE_KEY) === "true";
+      } catch (e) {
+        log("sessionStorage unavailable:", e);
+        return false;
       }
-    } catch (e) {
-      log("sessionStorage unavailable:", e);
+    })();
+
+    if (shouldSkipAutoOpen) {
+      log(isMobile ? "Mobile detected, showing nag instead of auto-open" : "Auto-open already completed this session");
+      // Fall back to regular nag behavior
+      nagTimerRef.current = window.setTimeout(() => {
+        log("Nag triggered");
+        setIsNagging(true);
+      }, config.nagDelay);
+      return () => {
+        if (nagTimerRef.current) {
+          clearTimeout(nagTimerRef.current);
+          nagTimerRef.current = null;
+        }
+      };
     }
 
     log("Starting auto-open timer:", config.nagDelay, "ms");
@@ -405,6 +413,7 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
 
   // Send a message (from input or prompt button)
   const sendMessage = (text: string) => {
+    markUserInteraction();
     addMessage("user", text);
     setInputValue("");
     setShowPrompts(false); // Hide prompts after first user message
@@ -431,18 +440,25 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
     setIsOpen((prev) => !prev);
     log("Widget toggled:", !isOpen);
 
+    // Clear auto-close timer if user manually interacts
+    if (autoCloseTimerRef.current) {
+      clearTimeout(autoCloseTimerRef.current);
+      autoCloseTimerRef.current = null;
+    }
+
     // Stop nagging when user interacts with the widget
     if (isNagging) {
       setIsNagging(false);
     }
 
-    // If user is closing the widget, mark nag as dismissed for this session
+    // If user is closing the widget, mark as dismissed for this session
     if (wasOpen && config.nagDelay) {
       try {
         sessionStorage.setItem(NAG_STORAGE_KEY, "true");
-        log("Nag dismissed for session");
+        sessionStorage.setItem(AUTO_OPEN_STORAGE_KEY, "true");
+        log("Widget closed, auto-open and nag dismissed for session");
       } catch (e) {
-        log("Could not save nag dismissal:", e);
+        log("Could not save dismissal state:", e);
       }
     }
   };
@@ -646,7 +662,10 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = (
             type="text"
             placeholder={config.placeholder}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              markUserInteraction();
+            }}
             className="fcw-chat-input"
             style={{ fontFamily: config.fontFamily }}
           />
